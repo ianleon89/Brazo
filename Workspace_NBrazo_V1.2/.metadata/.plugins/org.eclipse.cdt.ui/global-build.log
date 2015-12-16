@@ -1,0 +1,24 @@
+21:25:46 **** Incremental Build of configuration Debug for project Lib_CMSISv1p30_LPC17xx ****
+make all 
+make: Nothing to be done for `all'.
+21:25:49 **** Incremental Build of configuration Debug for project Application ****
+make all 
+Building file: ../Mef_Menu.c
+Invoking: MCU C Compiler
+arm-none-eabi-gcc -DALIGN_STRUCT_END=__attribute\(\(aligned\(4\)\)\) -DPACK_STRUCT_END=__attribute\(\(packed\)\) -DPACK_STRUCT_END=__attribute\(\(packed\)\) -DDEBUG -D__USE_CMSIS=CMSISv1p30_LPC17xx -D__CODE_RED -D__REDLIB__ -I"C:\nxp\projects\Workspace_NBrazo_V1.2\cr_dsplibFFTbin_cm3" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\cr_dsplib_cm3" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\cr_dsplib_testbench_fft" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\uart\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\CMSISv1p30_LPC17xx" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\lib_small_printf_m3\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\adc_buzzer\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\Application" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\Application\Lib_FreeRTOS\include" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\Application\Lib_FreeRTOS\portable\GCC\ARM_CM3" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\Application\Bitmaps" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\LIB_GLCDgui\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\LIB_GLCDPrimitives\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\LIB_GLCDPrimitives\fonts" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_GLCDLowLevel\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_TouchPanel\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_MCU\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_CMSISv1p30_LPC17xx\inc" -O0 -g3 -fsigned-char -c -fmessage-length=0 -fno-builtin -ffunction-sections -mcpu=cortex-m3 -mthumb -D__REDLIB__ -specs=redlib.specs -MMD -MP -MF"Mef_Menu.d" -MT"Mef_Menu.d" -o "Mef_Menu.o" "../Mef_Menu.c"
+Finished building: ../Mef_Menu.c
+ 
+Building target: Application.axf
+Invoking: MCU Linker
+arm-none-eabi-gcc -nostdlib -L"C:\nxp\projects\Workspace_NBrazo_V1.2\cr_dsplibFFTbin_cm3" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\uart\inc" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\CMSISv1p30_LPC17xx\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\lib_small_printf_m3\Lib" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\LIB_GLCDgui\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\LIB_GLCDPrimitives\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_GLCDLowLevel\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_TouchPanel\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_MCU\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_CMSISv1p30_LPC17xx\Debug" -Xlinker --gc-sections -Xlinker -Map=Application.map -mcpu=cortex-m3 -mthumb -T "example01_Debug.ld" -o "Application.axf"  ./Lib_FreeRTOS/portable/MemMang/heap_2.o  ./Lib_FreeRTOS/portable/GCC/ARM_CM3/port.o  ./Lib_FreeRTOS/list.o ./Lib_FreeRTOS/queue.o ./Lib_FreeRTOS/tasks.o  ./Funciones.o ./Graficos.o ./Mef_Menu.o ./adc.o ./cr_startup_lpc17.o ./debug.o ./freq.o ./iap_driver.o ./main.o ./rtc.o ./uart.o   -lcr_dsplibFFT_cm3 -lCMSISv1p30_LPC17xx -llib_small_printf_m3 -lLIB_GLCDgui -lLIB_GLCDPrimitives -lLib_GLCDLowLevel -lLib_TouchPanel -lLib_MCU -lCMSISv1p30_LPC17xx
+Finished building target: Application.axf
+ 
+make --no-print-directory post-build
+Performing post-build steps
+arm-none-eabi-size Application.axf; # arm-none-eabi-objcopy -O ihex Application.axf Application.hex ;
+   text	   data	    bss	    dec	    hex	filename
+  51448	    400	  32136	  83984	  14810	Application.axf
+ 
+21:26:03 **** Incremental Build of configuration Debug for project Application ****
+make all 
+make: Nothing to be done for `all'.

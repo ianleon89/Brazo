@@ -1,0 +1,13 @@
+21:50:00 **** Build of configuration Debug for project IAP ****
+make all 
+Building file: ../src/main.c
+Invoking: MCU C Compiler
+arm-none-eabi-gcc -D__REDLIB__ -DDEBUG -D__CODE_RED -D__USE_CMSIS=CMSISv1p30_LPC17xx -I"E:\Boreas\LPCXpresso\MisProyectos\DecibelimetroNuevo\Noviembre26\CargaNuevoF\CMSISv1p30_LPC17xx\inc" -O0 -g3 -Wall -c -fmessage-length=0 -fno-builtin -ffunction-sections -fdata-sections -mcpu=cortex-m3 -mthumb -MMD -MP -MF"src/main.d" -MT"src/main.d" -o "src/main.o" "../src/main.c"
+In file included from ../src/main.c:6:0:
+c:\nxp\lpcxpresso_6.1.4_194\lpcxpresso\tools\bin\../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/include/unistd.h:5:29: error: no include path in which to search for unistd.h
+../src/main.c: In function 'main':
+../src/main.c:17:1: warning: control reaches end of non-void function [-Wreturn-type]
+make: *** [src/main.o] Error 1
+
+21:50:01 Build Finished (took 375ms)
+

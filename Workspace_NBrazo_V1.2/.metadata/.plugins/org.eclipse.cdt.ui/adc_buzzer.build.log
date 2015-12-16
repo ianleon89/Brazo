@@ -1,0 +1,18 @@
+19:28:49 **** Incremental Build of configuration Debug for project adc_buzzer ****
+make all 
+Building file: ../src/main.c
+Invoking: MCU C Compiler
+arm-none-eabi-gcc -D__USE_CMSIS=CMSISv1p30_LPC13xx -DNO_FLOAT_PRINTF -DDEBUG -D__CODE_RED -D__REDLIB__ -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\cr_dsplib_cm3" -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\cr_dsplib_testbench_fft" -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\cr_dsplibFFTbin_cm3" -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\CMSISv1p30_LPC17xx\inc" -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\lib_small_printf_m3\inc" -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\adc_buzzer\inc" -O0 -g3 -Wall -c -fmessage-length=0 -fno-builtin -ffunction-sections -fdata-sections -mcpu=cortex-m3 -mthumb -MMD -MP -MF"src/main.d" -MT"src/main.d" -o "src/main.o" "../src/main.c"
+../src/main.c:84:1: warning: missing braces around initializer [-Wmissing-braces]
+../src/main.c:84:1: warning: (near initialization for 'W[0]') [-Wmissing-braces]
+../src/main.c: In function 'main':
+../src/main.c:937:13: error: invalid storage class for function 'vTest_PerformFFT'
+../src/main.c:968:1: error: expected declaration or statement at end of input
+../src/main.c: At top level:
+../src/main.c:132:13: warning: 'vTest_PerformFFT' declared 'static' but never defined [-Wunused-function]
+../src/main.c: In function 'main':
+../src/main.c:968:1: warning: control reaches end of non-void function [-Wreturn-type]
+make: *** [src/main.o] Error 1
+
+19:28:49 Build Finished (took 718ms)
+
