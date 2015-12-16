@@ -700,7 +700,7 @@ void CompactaTemp(uint8_t Sensor,uint8_t Sensibilidad){
 }
 
 void Grabacion(uint8_t Sensor,uint8_t Sensibilidad){
-	//ConstruyeFH();
+	ConstruyeFH();
 	CompactaTemp(Sensor,Sensibilidad);
 	Concatena();
 	BorraYGraba();

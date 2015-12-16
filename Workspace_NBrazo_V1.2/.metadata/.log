@@ -1522,3 +1522,39 @@ Binding(CTRL+SHIFT+H,
 		,,true),null),
 	org.eclipse.ui.defaultAcceleratorConfiguration,
 	org.eclipse.cdt.ui.cViewScope,,,system)
+
+!ENTRY org.eclipse.jface 2 0 2015-12-15 23:30:55.015
+!MESSAGE Keybinding conflicts occurred.  They may interfere with normal accelerator operation.
+!SUBENTRY 1 org.eclipse.jface 2 0 2015-12-15 23:30:55.016
+!MESSAGE A conflict occurred for HOME:
+Binding(HOME,
+	ParameterizedCommand(Command(org.eclipse.cdt.dsf.debug.ui.disassembly.commands.gotoPC,Go to Program Counter,
+		Navigate to current program counter,
+		Category(org.eclipse.debug.ui.category.run,Run/Debug,Run/Debug command category,true),
+		org.eclipse.ui.internal.WorkbenchHandlerServiceHandler@196dfa4,
+		,,true),null),
+	org.eclipse.ui.defaultAcceleratorConfiguration,
+	org.eclipse.cdt.dsf.debug.ui.disassembly.context,,,system)
+Binding(HOME,
+	ParameterizedCommand(Command(org.eclipse.ui.edit.text.goto.lineStart,Line Start,
+		Go to the start of the line of text,
+		Category(org.eclipse.ui.category.textEditor,Text Editing,Text Editing Commands,true),
+		org.eclipse.ui.internal.WorkbenchHandlerServiceHandler@34c96d,
+		,,true),null),
+	org.eclipse.ui.defaultAcceleratorConfiguration,
+	org.eclipse.ui.textEditorScope,,,system)
+
+!ENTRY com.crt.log 1 0 2015-12-15 23:36:23.800
+!MESSAGE Drivers loaded in 1683 milliseconds
+
+!ENTRY com.crt.log 1 0 2015-12-15 23:41:10.363
+!MESSAGE Drivers loaded in 1547 milliseconds
+
+!ENTRY com.crt.log 1 0 2015-12-15 23:50:38.554
+!MESSAGE Drivers loaded in 1548 milliseconds
+
+!ENTRY com.crt.log 1 0 2015-12-15 23:55:22.206
+!MESSAGE Drivers loaded in 1493 milliseconds
+
+!ENTRY com.crt.log 1 0 2015-12-16 00:04:37.137
+!MESSAGE Drivers loaded in 1556 milliseconds

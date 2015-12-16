@@ -106,13 +106,13 @@ void Rutina_Medicion(){
 						do{
 							tecla_membrana=Teclado();
 							if(tecla_membrana==ENTER){//Enter graba
-								if(CantMedici<Max_Mediciones){
-									Grabacion(Sensor,Sensibilidad);
+							/*	if(CantMedici<Max_Mediciones){
+							//		Grabacion(Sensor,Sensibilidad);
 								}else{
-								//	GUI_Window_Draw ( "Atencion" );
-								//	Tiempito(25);
+									GUI_Window_Draw ( "Atencion" );
+									Tiempito(25);
 
-								}
+								}*/
 								estado_medicion=1;
 							}
 						}
