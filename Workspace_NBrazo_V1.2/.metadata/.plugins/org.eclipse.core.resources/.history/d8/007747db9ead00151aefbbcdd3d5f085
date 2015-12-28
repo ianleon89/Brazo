@@ -341,7 +341,7 @@ void Presenta_Anterior(uint8_t NumMedicion){
 			case ARRIBA:{
 				NumEje++;
 				if(NumEje>2) NumEje=0;
-				Tiempito(1);
+				Tiempito(5);
 			}
 			break;
 			case ENTER:

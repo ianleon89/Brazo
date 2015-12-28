@@ -40,7 +40,6 @@ void Incializar_variables_locales(){
 
 	MedTie=0;*/
 	cursor1=1;
-	old_cursor1=1;
 	Sensor=1;	//Cuerpo Entero
     SysTickCount=0;
     Sensibilidad=0;
@@ -341,7 +340,7 @@ void Presenta_Anterior(uint8_t NumMedicion){
 			case ARRIBA:{
 				NumEje++;
 				if(NumEje>2) NumEje=0;
-				Tiempito(1);
+				Tiempito(5);
 			}
 			break;
 			case ENTER:
@@ -356,7 +355,7 @@ void Presenta_Anterior(uint8_t NumMedicion){
 				Tiempito(5);
 				EsperaTecla();//FIXME
 				PresentaGrafico(NumEje,Sensor);	// gráfico decibeles
-				Tiempito(1);
+				Tiempito(5);
 				EsperaTecla();//FIXME
 				GUI_Window_Draw ( "Menu" ); // PANTALLA PRINCIPAL
 				Posicion_Flecha(cursor1,old_cursor1);

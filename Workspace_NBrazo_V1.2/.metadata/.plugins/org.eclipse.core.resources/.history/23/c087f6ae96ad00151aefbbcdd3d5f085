@@ -40,7 +40,6 @@ void Incializar_variables_locales(){
 
 	MedTie=0;*/
 	cursor1=1;
-	old_cursor1=1;
 	Sensor=1;	//Cuerpo Entero
     SysTickCount=0;
     Sensibilidad=0;
@@ -182,7 +181,7 @@ void Medir(uint8_t Sensibilidad){
 	GUI_Window_Draw ( "Credit5" );
 	itoa(CantMedici,mensj);
 	GUI_Text_Draw_In_Credits5(mensj, WHITE, BLACK,111,19);
-	Tiempito(5);
+	Tiempito(10);
 
 }
 
@@ -193,27 +192,21 @@ void Rutina_Remoto(){
 	MiraUART1(Sensor);
 	CantMedici=Getter_Variables_uint16(5);
 	*/
-	int estado_remoto=0;
-	GUI_Window_Draw ( "Credit3" );
-	do{
-		MiraUART1(Sensor);
-		tecla_membrana=Teclado();
 
-		if(tecla_membrana==1){
-			estado_remoto=1;
-			GUI_Window_Draw ( "Menu" );
-			Posicion_Flecha(cursor1,old_cursor1);
-			Tiempito(1);
-			Menu_seleccionado=PRINCIPAL;;
-		}
+	tecla_membrana=Teclado();
 
+	if(tecla_membrana==0){
+		GUI_Text_Draw_In_Dimmer("Rutina Remoto ", WHITE, BLACK,40,30);
+		Tiempito(20);
+		//MiraUART1(Sensor);
+		//CantMedici=Getter_Variables_uint16(5);
 
-
-	}while(estado_remoto!=1);
-
-
-
-
+	}else{
+		GUI_Window_Draw ( "Menu" );
+		Posicion_Flecha(cursor1,old_cursor1);
+		Tiempito(1);
+		Menu_seleccionado=PRINCIPAL;
+	}
 
 }
 void Rutina_Presenta_Anterior(){
@@ -246,6 +239,11 @@ void Rutina_Presenta_Anterior(){
 		strcat(menss,coso_leido);
 		strcat(menss,auxi);
 		GUI_Text_Draw_In_Credits5(menss, WHITE, BLACK,90,19);
+		/*if(CantMedici==0){
+			GUI_Text_Draw_In_Credits5("VACIA", WHITE, BLACK,90,19);
+			Tiempito(3);
+		}else{*/
+
 		tecla_membrana=Teclado();
 		switch(tecla_membrana){
 
@@ -341,7 +339,7 @@ void Presenta_Anterior(uint8_t NumMedicion){
 			case ARRIBA:{
 				NumEje++;
 				if(NumEje>2) NumEje=0;
-				Tiempito(1);
+				Tiempito(5);
 			}
 			break;
 			case ENTER:
@@ -356,7 +354,7 @@ void Presenta_Anterior(uint8_t NumMedicion){
 				Tiempito(5);
 				EsperaTecla();//FIXME
 				PresentaGrafico(NumEje,Sensor);	// gráfico decibeles
-				Tiempito(1);
+				Tiempito(10);
 				EsperaTecla();//FIXME
 				GUI_Window_Draw ( "Menu" ); // PANTALLA PRINCIPAL
 				Posicion_Flecha(cursor1,old_cursor1);

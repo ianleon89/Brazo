@@ -3,7 +3,7 @@
  * (c) Code Red Technologies Ltd, 2008-${year}
  * (c) NXP Semiconductors 2013-${year}
  * Generated linker script file for 2015
- * Created from LPC1769 (Mon Dec 28 14:33:16 ART 2015)
+ * Created from LPC1769 (Mon Dec 28 17:11:02 ART 2015)
  * By generic_c.ld on LPCXpresso v7.0.2 [Build 102] [2014-03-11] 
  */
 

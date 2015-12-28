@@ -824,24 +824,6 @@ void ConstruyeFH(void){
 	HO=current_time.RTC_Hour;
 	MI=current_time.RTC_Min;
 	SE=current_time.RTC_Sec;
-	if(HO==0)
-		HO=24;
-	else if(HO>24)
-		HO=1;
-	if(MI==0)
-		MI=60;
-	else if(MI>60)
-		MI=59;
-	if(SE==0)
-		SE=1;
-	else if(SE>60)
-		SE=59;
-	if (AN<2015)
-		AN=2015;
-	if (ME>12)
-		ME=12;
-	if (DI>31)
-		DI=31;
 	cadena[LongitudTotal+0]=DI;
 	cadena[LongitudTotal+1]=ME;
 	cadena[LongitudTotal+2]=AN-2000;
