@@ -2,15 +2,17 @@
 <?scdStore version="2"?><scannerInfo id="org.eclipse.cdt.make.core.discoveredScannerInfo">
 <instance id="com.crt.advproject.config.exe.debug.1592495573;com.crt.advproject.config.exe.debug.1592495573.;com.crt.advproject.gcc.exe.debug.1135582167;com.crt.advproject.compiler.input.1138908407">
 <collector id="org.eclipse.cdt.make.core.PerProjectSICollector">
-<includePath path="c:\nxp\lpcxpresso_6.1.4_194\lpcxpresso\tools\bin\../lib/gcc/arm-none-eabi/4.6.2/include"/>
-<includePath path="c:\nxp\lpcxpresso_6.1.4_194\lpcxpresso\tools\bin\../lib/gcc/arm-none-eabi/4.6.2/include-fixed"/>
-<includePath path="c:\nxp\lpcxpresso_6.1.4_194\lpcxpresso\tools\bin\../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/include"/>
+<includePath path="c:/nxp/lpcxpresso_7.0.2_102/lpcxpresso/tools/redlib/include"/>
+<includePath path="c:/nxp/lpcxpresso_7.0.2_102/lpcxpresso/tools/features/include"/>
 <definedSymbol symbol="__STDC__=1"/>
 <definedSymbol symbol="__STDC_HOSTED__=1"/>
 <definedSymbol symbol="__GNUC__=4"/>
 <definedSymbol symbol="__GNUC_MINOR__=6"/>
+<definedSymbol symbol="__GNUC_MINOR__=8"/>
 <definedSymbol symbol="__GNUC_PATCHLEVEL__=2"/>
+<definedSymbol symbol="__GNUC_PATCHLEVEL__=3"/>
 <definedSymbol symbol="__VERSION__=&quot;4.6.2 20121016 (release) [ARM/embedded-4_6-branch revision 192487]&quot;"/>
+<definedSymbol symbol="__VERSION__=&quot;4.8.3 20131129 (release) [ARM/embedded-4_8-branch revision 205641]&quot;"/>
 <definedSymbol symbol="__FINITE_MATH_ONLY__=0"/>
 <definedSymbol symbol="__SIZEOF_INT__=4"/>
 <definedSymbol symbol="__SIZEOF_LONG__=4"/>
@@ -318,19 +320,45 @@
 <definedSymbol symbol="__GXX_TYPEINFO_EQUALITY_INLINE=0"/>
 <definedSymbol symbol="__ELF__=1"/>
 <definedSymbol symbol="__USES_INITFINI__=1"/>
+<definedSymbol symbol="__ATOMIC_RELAXED=0"/>
+<definedSymbol symbol="__ATOMIC_SEQ_CST=5"/>
+<definedSymbol symbol="__ATOMIC_ACQUIRE=2"/>
+<definedSymbol symbol="__ATOMIC_RELEASE=3"/>
+<definedSymbol symbol="__ATOMIC_ACQ_REL=4"/>
+<definedSymbol symbol="__ATOMIC_CONSUME=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_BOOL_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_CHAR_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_CHAR16_T_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_CHAR32_T_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_WCHAR_T_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_SHORT_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_INT_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_LONG_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_LLONG_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_TEST_AND_SET_TRUEVAL=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_POINTER_LOCK_FREE=1"/>
+<definedSymbol symbol="__ARM_SIZEOF_MINIMAL_ENUM=1"/>
+<definedSymbol symbol="__ARM_SIZEOF_WCHAR_T=32"/>
+<definedSymbol symbol="__ARM_ARCH=4"/>
+<definedSymbol symbol="__ARM_ARCH_ISA_ARM=1"/>
+<definedSymbol symbol="__ARM_ARCH_ISA_THUMB=1"/>
+<definedSymbol symbol="__ARM_FP=12"/>
+<definedSymbol symbol="__ARM_NEON_FP=4"/>
 </collector>
 </instance>
 <instance id="com.crt.advproject.config.exe.debug.1592495573;com.crt.advproject.config.exe.debug.1592495573.;com.crt.advproject.gas.exe.debug.1993576852;com.crt.advproject.assembler.input.168437841">
 <collector id="org.eclipse.cdt.make.core.PerProjectSICollector">
-<includePath path="c:\nxp\lpcxpresso_6.1.4_194\lpcxpresso\tools\bin\../lib/gcc/arm-none-eabi/4.6.2/include"/>
-<includePath path="c:\nxp\lpcxpresso_6.1.4_194\lpcxpresso\tools\bin\../lib/gcc/arm-none-eabi/4.6.2/include-fixed"/>
-<includePath path="c:\nxp\lpcxpresso_6.1.4_194\lpcxpresso\tools\bin\../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/include"/>
+<includePath path="c:/nxp/lpcxpresso_7.0.2_102/lpcxpresso/tools/redlib/include"/>
+<includePath path="c:/nxp/lpcxpresso_7.0.2_102/lpcxpresso/tools/features/include"/>
 <definedSymbol symbol="__STDC__=1"/>
 <definedSymbol symbol="__STDC_HOSTED__=1"/>
 <definedSymbol symbol="__GNUC__=4"/>
 <definedSymbol symbol="__GNUC_MINOR__=6"/>
+<definedSymbol symbol="__GNUC_MINOR__=8"/>
 <definedSymbol symbol="__GNUC_PATCHLEVEL__=2"/>
+<definedSymbol symbol="__GNUC_PATCHLEVEL__=3"/>
 <definedSymbol symbol="__VERSION__=&quot;4.6.2 20121016 (release) [ARM/embedded-4_6-branch revision 192487]&quot;"/>
+<definedSymbol symbol="__VERSION__=&quot;4.8.3 20131129 (release) [ARM/embedded-4_8-branch revision 205641]&quot;"/>
 <definedSymbol symbol="__FINITE_MATH_ONLY__=0"/>
 <definedSymbol symbol="__SIZEOF_INT__=4"/>
 <definedSymbol symbol="__SIZEOF_LONG__=4"/>
@@ -638,6 +666,30 @@
 <definedSymbol symbol="__GXX_TYPEINFO_EQUALITY_INLINE=0"/>
 <definedSymbol symbol="__ELF__=1"/>
 <definedSymbol symbol="__USES_INITFINI__=1"/>
+<definedSymbol symbol="__ATOMIC_RELAXED=0"/>
+<definedSymbol symbol="__ATOMIC_SEQ_CST=5"/>
+<definedSymbol symbol="__ATOMIC_ACQUIRE=2"/>
+<definedSymbol symbol="__ATOMIC_RELEASE=3"/>
+<definedSymbol symbol="__ATOMIC_ACQ_REL=4"/>
+<definedSymbol symbol="__ATOMIC_CONSUME=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_BOOL_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_CHAR_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_CHAR16_T_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_CHAR32_T_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_WCHAR_T_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_SHORT_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_INT_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_LONG_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_LLONG_LOCK_FREE=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_TEST_AND_SET_TRUEVAL=1"/>
+<definedSymbol symbol="__GCC_ATOMIC_POINTER_LOCK_FREE=1"/>
+<definedSymbol symbol="__ARM_SIZEOF_MINIMAL_ENUM=1"/>
+<definedSymbol symbol="__ARM_SIZEOF_WCHAR_T=32"/>
+<definedSymbol symbol="__ARM_ARCH=4"/>
+<definedSymbol symbol="__ARM_ARCH_ISA_ARM=1"/>
+<definedSymbol symbol="__ARM_ARCH_ISA_THUMB=1"/>
+<definedSymbol symbol="__ARM_FP=12"/>
+<definedSymbol symbol="__ARM_NEON_FP=4"/>
 </collector>
 </instance>
 <instance id="com.crt.advproject.config.exe.release.1192076061;com.crt.advproject.config.exe.release.1192076061.;com.crt.advproject.gcc.exe.release.718306490;com.crt.advproject.compiler.input.2047327751">

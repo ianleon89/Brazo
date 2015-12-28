@@ -27,7 +27,7 @@ void CreateGUI ()
 	// Window "Home"	PRESENTACION
 	GUI_Window_Create ( "Home", "None", WHITE, "BIENVENIDO", NULL, NULL, NULL );
 	GUI_Text_Create ( "Home", "txtAp1", 24, 20, WHITE, "", BLACK, "  VIBROMETRO" );
-	GUI_Button_Create ( "Home", "btnHome1", 12, 52, 40, 40, BLACK, "", WHITE, " Vib 2.0",
+	GUI_Button_Create ( "Home", "btnHome1", 12, 52, 40, 40, BLACK, "", WHITE, " V.IV 1.0",
 						wndHome_btnSettings_OnClik, NULL, NULL, NULL );
 
 	// Window "Credits" PANTALLA MEDICIÓN PREVIA

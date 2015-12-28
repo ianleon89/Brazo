@@ -199,11 +199,8 @@ char * Getter_Array_char(int selec){
 	char mens3[20];
 	switch(selec){
 
-		case 0:{
 
-			return mens3;
-		}
-		break;
+
 		case 1:{
 
 			return coso;
@@ -368,14 +365,34 @@ uint8_t sigo;
 
 
 
-void GLCD_Bmp (unsigned char *bmp) {
-  unsigned int   j;
-  unsigned short *bitmap_ptr = (unsigned short *)bmp;
-  j=0;
+void GLCD_Bmp (uint32_t *bmp) {
+  unsigned int   j,flag=0;
+ // uint32_t *bitmap_ptr = bmp;
+  //unsigned short *bitmap_ptr = (unsigned short *)bmp;
+  short *bitmap_ptr = (short *)bmp;
+  short aux;
+ // j=0;
   strcpy(cadena,"");
-  while((bitmap_ptr != NULL) && (j<2*LARGO)){
+  memcpy(cadena,(char *)bmp,2*LARGO);
+/*
+  for(j=0;(bitmap_ptr != NULL)&&(j<2*LARGO);j++){
+	  aux=*(bitmap_ptr+j);
+	  cadena[j]= aux;
+  }*/
+/*
+ while((bitmap_ptr != NULL) && (j<2*LARGO)){
 	  cadena[j++]=*bitmap_ptr++;
+  }*/
+
+  for(j=0;j<2*LARGO;j++){
+	  if((cadena[j]==NULL)||(flag==1) ){
+		  flag=1;
+		  cadena[j]='\0';
+
+	  }
+
   }
+
   if(strlen(cadena)>2) {
 	  MemoriaVacia=0;
   }
@@ -507,16 +524,17 @@ void MandarVector2(uint8_t Sensor)
 	UARTSend(1, (uint8_t *)coso, 2 );
 	UARTSend(1, (uint8_t *)"W" ,1 );
 }
-void LevantaMedicion(uint32_t p,uint8_t Sensor){
-	int QueSapa, Factor;
+void LevantaMedicion(uint32_t p,uint8_t Sensibilidad){
+	int QueSapa, Factor,q;
 	QueSapa=cadena[p*LongReg+66]-10;
-//	Sensor=cadena[p*LongReg+66]-10;
-	/*
-	if(QueSapa==0) {Sensor=0; Sensibilidad=0; Factor=4;}
-	if(QueSapa==1) {Sensor=1; Sensibilidad=0; Factor=4;}
-	if(QueSapa==5) {Sensor=0; Sensibilidad=1; Factor=1;}
-	if(QueSapa==6) {Sensor=1; Sensibilidad=1; Factor=1;}
-	Divisor=cadena[p*LongReg+67]-10;*/
+	uint8_t Sensa;
+	Sensa=cadena[p*LongReg+66]-10;
+
+	if(QueSapa==0) {Sensa=0; Sensibilidad=0; Factor=4;}
+	if(QueSapa==1) {Sensa=1; Sensibilidad=0; Factor=4;}
+	if(QueSapa==5) {Sensa=0; Sensibilidad=1; Factor=1;}
+	if(QueSapa==6) {Sensa=1; Sensibilidad=1; Factor=1;}
+	Divisor=cadena[p*LongReg+67]-10;
 	for(q=0;q<3;q++){
 		for(m=0;m<20;m++){
 			ValorOctava[q][m]=cadena[p*LongReg+6+20*q+m]*Divisor-1;
@@ -685,22 +703,22 @@ void CompactaTemp(uint8_t Sensor,uint8_t Sensibilidad){
 			if(ValorOctava[q][m]>255) Divisor=2;
 		}
 	}
-	q=0;
+	//q=0;
 	for(q=0;q<3;q++){
 		for(m=0;m<20;m++){
-			ind=q*20+m+6;
-			cadena[LongitudTotal+ind]=(int)(1+(ValorOctava[q][m]/Divisor));
+			ind=q*20+m+6;//ES +6 PORQ FECHA Y HORA TIENE UN TAMANO DE 6
+			cadena[LongitudTotal+ind]=(unsigned int)(1+(ValorOctava[q][m]/Divisor));
 		}
 	}
-	k=ind;
+//	k=ind;
 	cadena[LongitudTotal+ind+1]=Sensor+5*Sensibilidad+10;
 	cadena[LongitudTotal+ind+2]=Divisor+10;
 	cadena[LongitudTotal+ind+3]='\0';
-	k=strlen(cadena);
+	//k=strlen(cadena);
 }
 
 void Grabacion(uint8_t Sensor,uint8_t Sensibilidad){
-	//ConstruyeFH();
+	ConstruyeFH();
 	CompactaTemp(Sensor,Sensibilidad);
 	Concatena();
 	BorraYGraba();
@@ -727,26 +745,29 @@ void BorraYGraba(void){
 }
 
 void LeeMemoria(void){
-	GLCD_Bmp((uint8_t *)( CONFIG_FLASH_OFFSET));//+CONFIG_FLASH_SECTOR ));
+	GLCD_Bmp((uint32_t *)( CONFIG_FLASH_OFFSET));//+CONFIG_FLASH_SECTOR ));
 }
 
 void BorraMemoria(){
 	//for()
 //	strcpy(cadena,"");
-	for(c=0; c<strlen(cadena); c++) {
+	int a,b;
 
+	a=strlen(cadena);
+	b=strlen(stringMemory);
+
+	for(c=0; c<a; c++) {
 		cadena[c]='\0';
 	}
-	for(c=0; c<strlen(stringMemory); c++) {
-
+	for(c=0; c<b; c++) {
 		stringMemory[c]='\0';
 		//cadena[c];
 	}
-
+	LongitudTotal=0;// Se reinicia la Longitud total
 }
 
 void Concatena(void){
-	for(c=0; c<2*LARGO; c++) stringMemory[2*c] = cadena[c];
+	for(c=0; c<2*LARGO; c++) stringMemory[c] = cadena[c]; //stringMemory[2*c]
 }
 
 void EnviaInfo(void){

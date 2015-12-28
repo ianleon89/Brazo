@@ -36,7 +36,7 @@ OBJS += \
 %.o: ../%.s
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU Assembler'
-	arm-none-eabi-gcc -c -x assembler-with-cpp -DDEBUG -D__CODE_RED -D__REDLIB__ -mcpu=cortex-m3 -mthumb -o "$@" "$<"
+	arm-none-eabi-gcc -c -x assembler-with-cpp -DDEBUG -D__CODE_RED -D__REDLIB__ -mcpu=cortex-m3 -mthumb -D__REDLIB__ -specs=redlib.specs -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

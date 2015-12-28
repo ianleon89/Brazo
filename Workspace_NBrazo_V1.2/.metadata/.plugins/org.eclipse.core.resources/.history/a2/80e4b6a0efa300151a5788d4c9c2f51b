@@ -105,16 +105,27 @@ void Rutina_Medicion(){
 						//Tiempito(25);
 						do{
 							tecla_membrana=Teclado();
+							switch (tecla_membrana){
+
+							case ENTER:	// cancel sale
+								Grabacion(Sensor,Sensibilidad);
+								estado_medicion=0;
+							break;
+
+							}
+							/*
 							if(tecla_membrana==ENTER){//Enter graba
+								Medir(Sensibilidad);
 								if(CantMedici<Max_Mediciones){
-								//Grabacion(Sensor,Sensibilidad);
+
+							//		Grabacion(Sensor,Sensibilidad);
 								}else{
-									GUI_Window_Draw ( "Atencion" );
-									Tiempito(25);
+								//	GUI_Window_Draw ( "Atencion" );
+								//	Tiempito(25);
 
 								}
 								estado_medicion=1;
-							}
+							}*/
 						}
 						while(estado_medicion!=1);
 						Posicion_Flecha(cursor1,old_cursor1);

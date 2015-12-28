@@ -1,6 +1,6 @@
-16:01:44 **** Build of configuration Debug for project LIB_GLCDPrimitives ****
+12:32:48 **** Build of configuration Debug for project LIB_GLCDPrimitives ****
 make all 
 make: Nothing to be done for `all'.
 
-16:01:44 Build Finished (took 172ms)
+12:32:49 Build Finished (took 956ms)
 

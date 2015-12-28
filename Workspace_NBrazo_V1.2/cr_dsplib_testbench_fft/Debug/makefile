@@ -29,7 +29,7 @@ all: cr_dsplib_testbench_fft.axf
 cr_dsplib_testbench_fft.axf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU Linker'
-	arm-none-eabi-gcc -nostdlib -L"E:\Boreas\LPCXpresso\MisProyectos\DecibelimetroNuevo\Diciembre07\Nuevo16\cr_dsplibFFTbin_cm3" -Xlinker --gc-sections -Xlinker -Map=cr_dsplib_testbench_fft.map -mcpu=cortex-m3 -mthumb -T "cr_dsplib_testbench_fft_Debug.ld" -o "cr_dsplib_testbench_fft.axf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-gcc -nostdlib -L"C:\nxp\projects\Workspace_NBrazo_V1.2\cr_dsplibFFTbin_cm3" -Xlinker --gc-sections -Xlinker -Map=cr_dsplib_testbench_fft.map -mcpu=cortex-m3 -mthumb -T "cr_dsplib_testbench_fft_Debug.ld" -o "cr_dsplib_testbench_fft.axf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build

@@ -1,5 +1,8 @@
 #include "Mef_Menu.h"
 //#include "main.h"
+
+
+
 /*
 	uint16_t seguir0, seguir1, seguir2,seguir3, seguir4, seguir5, seguir6;
 	uint8_t cursor1, tecla0, tecla1, tecla2, tecla3, tecla4, tecla5, tecla6, tecla7, old_cursor1;
@@ -23,7 +26,7 @@ char *mens,*coso,*stringMemory,*aux;
 uint8_t Sensibilidad,MedTie;
 const uint8_t VecTMedicion[3]={3,30,120};
 uint16_t TMedicion;
-int Max_Mediciones=29;
+//uint16_t Max_Mediciones=29;
 //Funciones
 
 void Incializar_variables_locales(){
@@ -105,20 +108,40 @@ void Rutina_Medicion(){
 						//Tiempito(25);
 						do{
 							tecla_membrana=Teclado();
-							if(tecla_membrana==ENTER){//Enter graba
+							switch (tecla_membrana){
+
+							case ENTER:
+								CantMedici=Getter_Variables_uint16(5);//Se fija en la variable Cnatidad_de_Mediciones en Funciones.c
 								if(CantMedici<Max_Mediciones){
-									Grabacion(Sensor,Sensibilidad);
+
+								Grabacion(Sensor,Sensibilidad);
+								estado_medicion=1;
+								}else{
+										GUI_Window_Draw ( "Atencion" );
+										Tiempito(25);
+								}
+							break;
+							case CANCEL: // cancel sale
+								estado_medicion=1;
+							break;
+							}
+							/*
+							if(tecla_membrana==ENTER){//Enter graba
+								Medir(Sensibilidad);
+								if(CantMedici<Max_Mediciones){
+
+							//		Grabacion(Sensor,Sensibilidad);
 								}else{
 								//	GUI_Window_Draw ( "Atencion" );
 								//	Tiempito(25);
 
 								}
 								estado_medicion=1;
-							}
+							}*/
 						}
 						while(estado_medicion!=1);
-						Posicion_Flecha(cursor1,old_cursor1);
 						GUI_Window_Draw ( "Menu" );
+						Posicion_Flecha(cursor1,old_cursor1);
 						Tiempito(5);
 						Menu_seleccionado=PRINCIPAL;
 					break;
@@ -136,7 +159,7 @@ void Rutina_Medicion(){
 
 void Medir(uint8_t Sensibilidad){
 	//mens=Getter_Array_char(0);
-	//CantMedici=Getter_Variables_uint16(5);
+	CantMedici=Getter_Variables_uint16(5);
 	char mensj[20];
 	if(Sensibilidad) Apaga_Salida_Seisg();  // Apaga salida de +/- 6G
 	if(Sensibilidad) Apaga_Salida_Unopcincog(); // Apaga salida +/- 1.5G
@@ -187,53 +210,72 @@ void Rutina_Remoto(){
 
 }
 void Rutina_Presenta_Anterior(){
-	coso=Getter_Array_char(1);
-	mens=Getter_Array_char(0);
-	aux=Getter_Array_char(3);
-	CantMedici=Getter_Variables_uint16(5);
-	uint8_t NumMedicion=Getter_Variables_uint8(1);
-	Tiempito(1);
-    strcpy(mens,"");
-	if(NumMedicion<9) strcpy(mens,"0");
-	itoa(NumMedicion+1,coso);
-	strcat(mens,coso);
-	strcat(mens,aux);
-	GUI_Text_Draw_In_Credits5(mens, WHITE, BLACK,90,19);
 
-	if(CantMedici==0){
-		GUI_Text_Draw_In_Credits5("VACIA", WHITE, BLACK,90,19);
-		Tiempito(3);
+	uint8_t NumMedicion=0;
+	//aux=Getter_Array_char(3);
+	char mensaje[20];
+	char coso_leido[2];
+	char auxi[10];
+	char menss[20];
+	int estado_presenta_anterior=0;
+	coso=Getter_Array_char(1);
+	coso_leido[0]=*(coso+0);
+	coso_leido[1]=*(coso+1);
+	CantMedici=Getter_Variables_uint16(5);
+	itoa(CantMedici,coso_leido);
+	if(CantMedici<10){
+		strcpy(auxi,"/0");
 	}else{
+		strcpy(auxi,"/");
+		}
+	strcat(auxi,coso_leido);
+
+	do{
+
+		Tiempito(1);
+		strcpy(menss,"");
+		if(NumMedicion<9) strcpy(menss,"0");
+		itoa(NumMedicion+1,coso_leido);
+		strcat(menss,coso_leido);
+		strcat(menss,auxi);
+		GUI_Text_Draw_In_Credits5(menss, WHITE, BLACK,90,19);
+		/*if(CantMedici==0){
+			GUI_Text_Draw_In_Credits5("VACIA", WHITE, BLACK,90,19);
+			Tiempito(3);
+		}else{*/
 
 		tecla_membrana=Teclado();
 		switch(tecla_membrana){
 
 		case CANCEL:	// cancel sale
+			estado_presenta_anterior=1;
 			GUI_Window_Draw ( "Menu" ); // PANTALLA PRINCIPAL
 			Posicion_Flecha(cursor1,old_cursor1);
 			Tiempito(1);
 			Menu_seleccionado=PRINCIPAL;
 		break;
 		case ABAJO:
-			/*if(NumMedicion>0){
+			if(NumMedicion>0){
 				NumMedicion--;
-				}else{
-					NumMedicion=CantMedici-1;
-					}*/
+			}else{
+				NumMedicion=CantMedici-1;
+			}
 		break;
 		case ARRIBA:
-			/*if(NumMedicion<CantMedici-1){
+			if(NumMedicion<CantMedici-1){
 				NumMedicion++;
 				}else{
 					NumMedicion=0;
-				}*/
+				}
 		break;
 		case ENTER: // Presenta anterior
-			Presenta_Anterior();
+				Presenta_Anterior(NumMedicion);
+				estado_presenta_anterior=1;
 		break;
 
+			//}
 		}
-	}
+	}while(estado_presenta_anterior!=1);
 
 
 }
@@ -249,13 +291,13 @@ void PresentaTMedicion(uint8_t Sensor){
 		Sensor=1;
 	}
 	else{
-		strcpy(mens,"BRAZ0");
+		strcpy(mensj,"BRAZ0");
 		Sensor=0;
 	}
 	GUI_Text_Draw_In_Credits (mensj, WHITE, BLACK, 45,11);
 	itoa(TMedicion,aux);
 	if(TMedicion<10) strcpy(mensj,"00");
-	if(TMedicion>10 && TMedicion<100) strcpy(mens,"0");
+	if(TMedicion>10 && TMedicion<100) strcpy(mensj,"0");
 	if(TMedicion>100) strcpy(mensj,"");
 	strcat(mensj,aux);
 	GUI_Text_Draw_In_Credits (mensj, WHITE, BLACK, 95,21);
@@ -268,65 +310,59 @@ void PresentaTMedicion(uint8_t Sensor){
 	GUI_Text_Draw_In_Credits (mensj, WHITE, BLACK, 85,31);
 	//GUI_Text_Draw_In_Menu (" EStoy en MED ", WHITE, BLACK, 85,31);
 }
-void Presenta_Anterior(){
+void Presenta_Anterior(uint8_t NumMedicion){
 
 
-	uint8_t estado=0;
-
+	uint8_t estado=0,NumEje=0;
 	int j;
 
 	//uint8_t NumMedicion=Getter_Variables_uint8(1);
 	//strcpy(mens,"EJE:");
 	GUI_Text_Draw_In_Credits5("EJE:", WHITE, BLACK,40,29);
-
 	Tiempito(5);
-	GUI_Text_Draw_In_Credits5("Z", WHITE, BLACK,70,29);
-	Tiempito(5);
-    GUI_Text_Draw_In_Credits5("X", WHITE, BLACK,70,29);
-    Tiempito(5);
-    GUI_Text_Draw_In_Credits5("Y", WHITE, BLACK,70,29);
-    Tiempito(5);
 	do{
 
+		if(NumEje==0) GUI_Text_Draw_In_Credits5("Z", WHITE, BLACK,70,29);
+		if(NumEje==1) GUI_Text_Draw_In_Credits5("X", WHITE, BLACK,70,29);
+		if(NumEje==2) GUI_Text_Draw_In_Credits5("Y", WHITE, BLACK,70,29);
 		tecla_membrana=Teclado();
 		switch(tecla_membrana){
-		case CANCEL:{ // cancel sale
-			estado=1;
-			GUI_Window_Draw ( "Menu" ); // PANTALLA PRINCIPAL
-		    Posicion_Flecha(cursor1,old_cursor1);
-		    Tiempito(1);
-			Menu_seleccionado=PRINCIPAL;
-		}
-		break;
-		case ABAJO:
-		case ARRIBA:{
-		//	NumEje++;
-			//if(NumEje>2) NumEje=0;
-		//	Tiempito(5);
-		}
+			case CANCEL:{ // cancel sale
+				estado=1;
+				GUI_Window_Draw ( "Menu" ); // PANTALLA PRINCIPAL
+				Posicion_Flecha(cursor1,old_cursor1);
+				Tiempito(1);
+				Menu_seleccionado=PRINCIPAL;
+			}
 			break;
-		case ENTER:
-		{
-			//LevantaMedicion(NumMedicion,Sensor);
-			//for(j=0;j<3;j++){
-			//	CalculaDecibeles(j);
-			//	CalculoRMS(j,Sensor);
-		//	}
-			GUI_Window_Draw ( "Credit4" );
-			PresentaResultados(Sensor);
-			//Tiempito(10);
-			EsperaTecla();//FIXME
-			//PresentaGrafico(NumEje,Sensor);	// gráfico decibeles
-			Tiempito(10);
-			EsperaTecla();//FIXME
-			GUI_Window_Draw ( "Menu" ); // PANTALLA PRINCIPAL
-			Posicion_Flecha(cursor1,old_cursor1);
-			Tiempito(1);
-			Menu_seleccionado=PRINCIPAL;
-			estado=1;
+			case ABAJO:
+			case ARRIBA:{
+				NumEje++;
+				if(NumEje>2) NumEje=0;
+				Tiempito(5);
+			}
+			break;
+			case ENTER:
+			{
+				LevantaMedicion(NumMedicion,Sensibilidad);
+				for(j=0;j<3;j++){
+					CalculaDecibeles(j,Sensibilidad);
+					CalculoRMS(j,Sensor,Sensibilidad);
+				}
+				GUI_Window_Draw ( "Credit4" );
+				PresentaResultados(Sensor);
+				Tiempito(5);
+				EsperaTecla();//FIXME
+				PresentaGrafico(NumEje,Sensor);	// gráfico decibeles
+				Tiempito(10);
+				EsperaTecla();//FIXME
+				GUI_Window_Draw ( "Menu" ); // PANTALLA PRINCIPAL
+				Posicion_Flecha(cursor1,old_cursor1);
+				Tiempito(1);
+				Menu_seleccionado=PRINCIPAL;
+				estado=1;
+			}
 		}
-		}
-		break;
 	}while(estado!=1);
 }
 
@@ -446,10 +482,10 @@ void Seleccion_Menus(int Menu){
 		}
 		break;
 		case VER_ANTERIORES:{
-			int CantMedici=0;//FIXME solo para prueba
+		//int CantMedici=0;
+			CantMedici=Getter_Variables_uint16(5);
+
 			GUI_Window_Draw ( "Anterior" );
-			//NumMedicion=0;
-		//	NumEje=0;
 			Tiempito(5);
 			if(CantMedici<1){
 				GUI_Text_Draw_In_Credits5("VACIA", WHITE, BLACK,80,19);
@@ -457,16 +493,9 @@ void Seleccion_Menus(int Menu){
 				GUI_Window_Draw ( "Menu" ); // PANTALLA PRINCIPAL
 				Posicion_Flecha(cursor1,old_cursor1);
 				Tiempito(1);
-
 				Menu_seleccionado=PRINCIPAL;
 			}else {
-			/*	itoa(CantMedici,coso);
-				if(CantMedici<10){
-				strcpy(aux,"/0");
-				 }else{
-					 strcpy(aux,"/");
-   				  }
-				strcat(aux,coso);*/
+
 				Menu_seleccionado=VER_ANTERIORES;
 	 	 	 }
 

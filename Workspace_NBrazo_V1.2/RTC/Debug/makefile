@@ -29,7 +29,7 @@ all: RTC.axf
 RTC.axf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU Linker'
-	arm-none-eabi-gcc -nostdlib -L"E:\Boreas\LPCXpresso\MisProyectos\DecibelimetroNuevo\Diciembre07\Nuevo16\CMSISv2_LPC17xx\Debug" -Xlinker -Map=RTC.map -Xlinker --gc-sections -mcpu=cortex-m3 -mthumb -T "RTC_Debug.ld" -o "RTC.axf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-gcc -nostdlib -L"C:\nxp\projects\Workspace_NBrazo_V1.2\CMSISv2_LPC17xx\Debug" -Xlinker -Map=RTC.map -Xlinker --gc-sections -mcpu=cortex-m3 -mthumb -T "RTC_Debug.ld" -o "RTC.axf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build

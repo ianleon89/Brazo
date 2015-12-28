@@ -199,11 +199,8 @@ char * Getter_Array_char(int selec){
 	char mens3[20];
 	switch(selec){
 
-		case 0:{
 
-			return mens3;
-		}
-		break;
+
 		case 1:{
 
 			return coso;
@@ -685,18 +682,18 @@ void CompactaTemp(uint8_t Sensor,uint8_t Sensibilidad){
 			if(ValorOctava[q][m]>255) Divisor=2;
 		}
 	}
-	q=0;
+	//q=0;
 	for(q=0;q<3;q++){
 		for(m=0;m<20;m++){
-			ind=q*20+m+6;
-			cadena[LongitudTotal+ind]=(int)(1+(ValorOctava[q][m]/Divisor));
+			ind=q*20+m+6;//ES +6 PORQ FECHA Y HORA TIENE UN TAMANO DE 6
+			cadena[LongitudTotal+ind]=(unsigned int)(1+(ValorOctava[q][m]/Divisor));
 		}
 	}
-	k=ind;
+//	k=ind;
 	cadena[LongitudTotal+ind+1]=Sensor+5*Sensibilidad+10;
 	cadena[LongitudTotal+ind+2]=Divisor+10;
 	cadena[LongitudTotal+ind+3]='\0';
-	k=strlen(cadena);
+	//k=strlen(cadena);
 }
 
 void Grabacion(uint8_t Sensor,uint8_t Sensibilidad){
@@ -733,20 +730,24 @@ void LeeMemoria(void){
 void BorraMemoria(){
 	//for()
 //	strcpy(cadena,"");
-	for(c=0; c<strlen(cadena); c++) {
+	int a,b;
+
+	a=strlen(cadena);
+	b=strlen(stringMemory);
+
+	for(c=0; c<a; c++) {
 
 		cadena[c]='\0';
 	}
-	for(c=0; c<strlen(stringMemory); c++) {
+	for(c=0; c<b; c++) {
 
 		stringMemory[c]='\0';
 		//cadena[c];
 	}
-
 }
 
 void Concatena(void){
-	for(c=0; c<2*LARGO; c++) stringMemory[2*c] = cadena[c];
+	for(c=0; c<2*LARGO; c++) stringMemory[c] = cadena[c]; //stringMemory[2*c]
 }
 
 void EnviaInfo(void){

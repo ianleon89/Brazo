@@ -38,7 +38,7 @@ C_DEPS += \
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU C Compiler'
-	arm-none-eabi-gcc -D__USE_CMSIS=CMSISv1p30_LPC13xx -DNO_FLOAT_PRINTF -DDEBUG -D__CODE_RED -D__REDLIB__ -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\cr_dsplib_cm3" -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\cr_dsplib_testbench_fft" -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\cr_dsplibFFTbin_cm3" -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\CMSISv1p30_LPC17xx\inc" -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\lib_small_printf_m3\inc" -I"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\adc_buzzer\inc" -O0 -g3 -Wall -c -fmessage-length=0 -fno-builtin -ffunction-sections -fdata-sections -mcpu=cortex-m3 -mthumb -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	arm-none-eabi-gcc -D__USE_CMSIS=CMSISv1p30_LPC13xx -DNO_FLOAT_PRINTF -DDEBUG -D__CODE_RED -D__REDLIB__ -I"C:\nxp\projects\Workspace_NBrazo_V1.2\cr_dsplib_cm3" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\cr_dsplib_testbench_fft" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\cr_dsplibFFTbin_cm3" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\CMSISv1p30_LPC17xx\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\lib_small_printf_m3\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\adc_buzzer\inc" -O0 -g3 -Wall -c -fmessage-length=0 -fno-builtin -ffunction-sections -fdata-sections -mcpu=cortex-m3 -mthumb -D__REDLIB__ -specs=redlib.specs -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

@@ -1,6 +1,6 @@
-16:01:53 **** Build of configuration Debug for project Lib_TouchPanel ****
+12:33:02 **** Build of configuration Debug for project Lib_TouchPanel ****
 make all 
 make: Nothing to be done for `all'.
 
-16:01:54 Build Finished (took 172ms)
+12:33:03 Build Finished (took 479ms)
 

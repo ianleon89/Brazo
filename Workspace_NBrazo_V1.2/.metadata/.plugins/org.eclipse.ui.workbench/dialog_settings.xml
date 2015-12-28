@@ -12,9 +12,9 @@
 		<list key="textEntries">
 		</list>
 	</section>
-	<section name="NewWizardAction">
-	</section>
 	<section name="ZipFileExportWizard">
+	</section>
+	<section name="NewWizardAction">
 	</section>
 	<section name="ImportExportAction">
 	</section>

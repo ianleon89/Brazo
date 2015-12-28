@@ -29,7 +29,7 @@ all: adc_buzzer.axf
 adc_buzzer.axf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU Linker'
-	arm-none-eabi-gcc -nostdlib -L"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\Lib_TouchPanel\Debug" -L"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\cr_dsplibFFTbin_cm3" -L"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\LIB_GLCDPrimitives\Debug" -L"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\Lib_GLCDLowLevel\Debug" -L"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\LIB_GLCDgui\Debug" -L"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\CMSISv1p30_LPC17xx\Debug" -L"E:\Boreas\TDA\Vibrometro\Brazo\NBrazo_4\lib_small_printf_m3\Lib" -Xlinker -Map=adc_buzzer.map -Xlinker --gc-sections -Xlinker --cref -mcpu=cortex-m3 -mthumb -T "adc_buzzer_Debug.ld" -o "adc_buzzer.axf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-gcc -nostdlib -L"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_TouchPanel\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\cr_dsplibFFTbin_cm3" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\LIB_GLCDPrimitives\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_GLCDLowLevel\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\LIB_GLCDgui\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\CMSISv1p30_LPC17xx\Debug" -L"C:\nxp\projects\Workspace_NBrazo_V1.2\lib_small_printf_m3\Lib" -Xlinker -Map=adc_buzzer.map -Xlinker --gc-sections -Xlinker --cref -mcpu=cortex-m3 -mthumb -T "adc_buzzer_Debug.ld" -o "adc_buzzer.axf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build

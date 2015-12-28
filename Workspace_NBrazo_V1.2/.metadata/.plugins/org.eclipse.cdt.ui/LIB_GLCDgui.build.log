@@ -1,51 +1,6 @@
-20:04:30 **** Build of configuration Debug for project LIB_GLCDgui ****
+12:32:49 **** Build of configuration Debug for project LIB_GLCDgui ****
 make all 
-Building file: ../src/text.c
-Invoking: MCU C Compiler
-arm-none-eabi-gcc -D__REDLIB__ -DDEBUG -D__CODE_RED -I"E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDPrimitives\fonts" -I"E:\Boreas\TDA\Vibrometro\Nuevo51\Lib_GLCDLowLevel\inc" -I"E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDPrimitives\inc" -I"E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDgui\inc" -O0 -g3 -Wall -c -fmessage-length=0 -fno-builtin -ffunction-sections -fdata-sections -mcpu=cortex-m3 -mthumb -MMD -MP -MF"src/text.d" -MT"src/text.d" -o "src/text.o" "../src/text.c"
-../src/text.c: In function 'GUI_Text_Create':
-../src/text.c:35:2: warning: passing argument 1 of 'strcpy' discards 'const' qualifier from pointer target type [enabled by default]
-c:\nxp\lpcxpresso_6.1.4_194\lpcxpresso\tools\bin\../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/include/redlib/string.h:45:14: note: expected 'char * __restrict__' but argument is of type 'const char *'
-../src/text.c:38:2: warning: passing argument 1 of 'strcpy' discards 'const' qualifier from pointer target type [enabled by default]
-c:\nxp\lpcxpresso_6.1.4_194\lpcxpresso\tools\bin\../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/include/redlib/string.h:45:14: note: expected 'char * __restrict__' but argument is of type 'const char *'
-../src/text.c: In function 'GUI_Text_Draw_In_Dimmer':
-../src/text.c:102:5: warning: passing argument 1 of 'GLCD_FreePuts' discards 'const' qualifier from pointer target type [enabled by default]
-E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDPrimitives\inc/GLCDFonts.h:38:6: note: expected 'char *' but argument is of type 'const char * const'
-../src/text.c: In function 'GUI_Text_Draw_In_Menu':
-../src/text.c:149:5: warning: passing argument 1 of 'GLCD_FreePuts' discards 'const' qualifier from pointer target type [enabled by default]
-E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDPrimitives\inc/GLCDFonts.h:38:6: note: expected 'char *' but argument is of type 'const char * const'
-../src/text.c: In function 'GUI_Text_Draw_In_Credits':
-../src/text.c:196:5: warning: passing argument 1 of 'GLCD_FreePuts' discards 'const' qualifier from pointer target type [enabled by default]
-E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDPrimitives\inc/GLCDFonts.h:38:6: note: expected 'char *' but argument is of type 'const char * const'
-../src/text.c: In function 'GUI_Text_Draw_In_Credit4':
-../src/text.c:245:5: warning: passing argument 1 of 'GLCD_FreePuts' discards 'const' qualifier from pointer target type [enabled by default]
-E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDPrimitives\inc/GLCDFonts.h:38:6: note: expected 'char *' but argument is of type 'const char * const'
-../src/text.c: In function 'GUI_Text_Draw_In_Credits5':
-../src/text.c:294:5: warning: passing argument 1 of 'GLCD_FreePuts' discards 'const' qualifier from pointer target type [enabled by default]
-E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDPrimitives\inc/GLCDFonts.h:38:6: note: expected 'char *' but argument is of type 'const char * const'
-../src/text.c: In function 'GUI_Text_Draw_In_GrafRes':
-../src/text.c:337:5: warning: passing argument 1 of 'GLCD_FreePuts' discards 'const' qualifier from pointer target type [enabled by default]
-E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDPrimitives\inc/GLCDFonts.h:38:6: note: expected 'char *' but argument is of type 'const char * const'
-Finished building: ../src/text.c
- 
-Building target: libLIB_GLCDgui.a
-Invoking: MCU Archiver
-arm-none-eabi-ar -r  "libLIB_GLCDgui.a"  ./src/GLCDgui.o ./src/button.o ./src/list.o ./src/object.o ./src/picture.o ./src/text.o ./src/textSlider.o ./src/windows.o   
-Finished building target: libLIB_GLCDgui.a
- 
-make --no-print-directory post-build
-Performing post-build steps
-arm-none-eabi-size libLIB_GLCDgui.a ; # arm-none-eabi-objdump -h -S libLIB_GLCDgui.a >libLIB_GLCDgui.lss
-   text	   data	    bss	    dec	    hex	filename
-    172	      0	      0	    172	     ac	GLCDgui.o (ex libLIB_GLCDgui.a)
-   1108	      0	      0	   1108	    454	button.o (ex libLIB_GLCDgui.a)
-    224	      0	      0	    224	     e0	list.o (ex libLIB_GLCDgui.a)
-    536	      0	      0	    536	    218	object.o (ex libLIB_GLCDgui.a)
-    364	      0	      0	    364	    16c	picture.o (ex libLIB_GLCDgui.a)
-   2880	      0	      0	   2880	    b40	text.o (ex libLIB_GLCDgui.a)
-   1272	      0	      0	   1272	    4f8	textSlider.o (ex libLIB_GLCDgui.a)
-   1420	      0	      0	   1420	    58c	windows.o (ex libLIB_GLCDgui.a)
- 
+make: Nothing to be done for `all'.
 
-20:04:31 Build Finished (took 1s.453ms)
+12:32:51 Build Finished (took 1s.235ms)
 

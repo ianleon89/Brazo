@@ -2,8 +2,8 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
 		<item value="257" key="DIALOG_WIDTH"/>
-		<item value="403" key="DIALOG_Y_ORIGIN"/>
-		<item value="1034" key="DIALOG_X_ORIGIN"/>
+		<item value="355" key="DIALOG_Y_ORIGIN"/>
+		<item value="1098" key="DIALOG_X_ORIGIN"/>
 		<item value="381" key="DIALOG_HEIGHT"/>
 		<item value="1|Segoe UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI" key="DIALOG_FONT_NAME"/>
 	</section>
@@ -13,16 +13,16 @@
 		<item value="false" key="isRegEx"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wholeword"/>
-		<item value="aux" key="selection"/>
+		<item value="GLCD" key="selection"/>
 		<list key="findhistory">
-			<item value="aux"/>
-			<item value="CalculaDecibeles"/>
-			<item value="calculo"/>
-			<item value="larga"/>
-			<item value="TMedicion"/>
-			<item value="estoy"/>
-			<item value="mens3"/>
-			<item value="mesn3"/>
+			<item value="glcd"/>
+			<item value="grabacion"/>
+			<item value="ConstruyeFH"/>
+			<item value="fech"/>
+			<item value="borra"/>
+			<item value="borrar"/>
+			<item value="string"/>
+			<item value="MemoriaVacia"/>
 		</list>
 		<list key="replacehistory">
 			<item value="A"/>

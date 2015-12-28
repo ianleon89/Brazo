@@ -161,7 +161,7 @@
 					<entry kind="macro" name="__REDLIB__" value=""/>
 					<entry kind="macro" name="__USE_CMSIS" value="CMSISv2_LPC17xx"/>
 				</resource>
-				<resource project-relative-path="Lib_FreeRTOS/portable/MemMang/heap_2.c">
+				<resource project-relative-path="freq.c">
 					<entry kind="includePath" name="/cr_dsplibFFTbin_cm3">
 						<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
 					</entry>
@@ -223,7 +223,7 @@
 					<entry kind="macro" name="__REDLIB__" value=""/>
 					<entry kind="macro" name="__USE_CMSIS" value="CMSISv1p30_LPC17xx"/>
 				</resource>
-				<resource project-relative-path="freq.c">
+				<resource project-relative-path="Lib_FreeRTOS/portable/MemMang/heap_2.c">
 					<entry kind="includePath" name="/cr_dsplibFFTbin_cm3">
 						<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
 					</entry>
@@ -1119,8 +1119,8 @@
 					<entry kind="includePath" name="/lib_small_printf_m3/inc">
 						<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
 					</entry>
-					<entry kind="includePath" name="/adc_buzzer/inc">
-						<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
+					<entry kind="includePath" name="/${ProjName}/inc">
+						<flag value="VALUE_WORKSPACE_PATH"/>
 					</entry>
 					<entry kind="macro" name="DEBUG" value=""/>
 					<entry kind="macro" name="NO_FLOAT_PRINTF" value=""/>
@@ -1215,15 +1215,6 @@
 					<entry kind="macro" name="__REDLIB__" value=""/>
 					<entry kind="macro" name="__USE_CMSIS" value="CMSISv1p30_LPC13xx"/>
 				</resource>
-				<resource project-relative-path="src/system_LPC17xx_RTCmain.c">
-					<entry kind="includePath" name="/CMSISv2_LPC17xx/inc">
-						<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
-					</entry>
-					<entry kind="macro" name="DEBUG" value=""/>
-					<entry kind="macro" name="__CODE_RED" value=""/>
-					<entry kind="macro" name="__REDLIB__" value=""/>
-					<entry kind="macro" name="__USE_CMSIS" value="CMSISv2_LPC17xx"/>
-				</resource>
 				<resource project-relative-path="src/iap_driver.c">
 					<entry kind="includePath" name="/cr_dsplib_cm3">
 						<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
@@ -1248,6 +1239,15 @@
 					<entry kind="macro" name="__CODE_RED" value=""/>
 					<entry kind="macro" name="__REDLIB__" value=""/>
 					<entry kind="macro" name="__USE_CMSIS" value="CMSISv1p30_LPC13xx"/>
+				</resource>
+				<resource project-relative-path="src/system_LPC17xx_RTCmain.c">
+					<entry kind="includePath" name="/CMSISv2_LPC17xx/inc">
+						<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
+					</entry>
+					<entry kind="macro" name="DEBUG" value=""/>
+					<entry kind="macro" name="__CODE_RED" value=""/>
+					<entry kind="macro" name="__REDLIB__" value=""/>
+					<entry kind="macro" name="__USE_CMSIS" value="CMSISv2_LPC17xx"/>
 				</resource>
 			</language>
 		</provider>

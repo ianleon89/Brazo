@@ -38,7 +38,7 @@ C_DEPS += \
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU C Compiler'
-	arm-none-eabi-gcc -D__REDLIB__ -DDEBUG -D__CODE_RED -I"E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDPrimitives\fonts" -I"E:\Boreas\TDA\Vibrometro\Nuevo51\Lib_GLCDLowLevel\inc" -I"E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDPrimitives\inc" -I"E:\Boreas\TDA\Vibrometro\Nuevo51\LIB_GLCDgui\inc" -O0 -g3 -Wall -c -fmessage-length=0 -fno-builtin -ffunction-sections -fdata-sections -mcpu=cortex-m3 -mthumb -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	arm-none-eabi-gcc -D__REDLIB__ -DDEBUG -D__CODE_RED -I"C:\nxp\projects\Workspace_NBrazo_V1.2\LIB_GLCDPrimitives\fonts" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\Lib_GLCDLowLevel\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\LIB_GLCDPrimitives\inc" -I"C:\nxp\projects\Workspace_NBrazo_V1.2\LIB_GLCDgui\inc" -O0 -g3 -Wall -c -fmessage-length=0 -fno-builtin -ffunction-sections -fdata-sections -mcpu=cortex-m3 -mthumb -D__REDLIB__ -specs=redlib.specs -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
