@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item value="237" key="DIALOG_WIDTH"/>
+		<item value="410" key="DIALOG_Y_ORIGIN"/>
+		<item value="1023" key="DIALOG_X_ORIGIN"/>
+		<item value="362" key="DIALOG_HEIGHT"/>
+		<item value="1|Tahoma|8.25|0|WINDOWS|1|-11|0|0|0|400|0|0|0|1|0|0|0|0|Tahoma" key="DIALOG_FONT_NAME"/>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item value="true" key="wrap"/>
+		<item value="true" key="casesensitive"/>
+		<item value="false" key="isRegEx"/>
+		<item value="false" key="incremental"/>
+		<item value="false" key="wholeword"/>
+		<item value="CompactaTemp" key="selection"/>
+		<list key="findhistory">
+			<item value="CompactaTemp"/>
+			<item value="grabacion"/>
+			<item value="CantMediciones"/>
+			<item value="LARGO"/>
+			<item value="cadena"/>
+			<item value="AnalisisFrec"/>
+			<item value="AceEnvio"/>
+			<item value="PresentaResultados"/>
+		</list>
+		<list key="replacehistory">
+			<item value="A"/>
+			<item value="FechaHora"/>
+			<item value="ValorOctava"/>
+			<item value="]=46;"/>
+			<item value="UARTSend(1"/>
+			<item value="UART1"/>
+		</list>
+	</section>
+</section>

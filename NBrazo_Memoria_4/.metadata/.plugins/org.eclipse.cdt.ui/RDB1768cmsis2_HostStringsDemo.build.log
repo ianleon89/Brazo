@@ -1,0 +1,11 @@
+21:50:16 **** Build of configuration Debug for project RDB1768cmsis2_HostStringsDemo ****
+make all 
+Building file: ../src/cr_startup_lpc176x.c
+Invoking: MCU C Compiler
+arm-none-eabi-gcc -DDEBUG -D__USE_CMSIS=CMSISv2p00_LPC17xx -D__CODE_RED -D__REDLIB__ -I"E:/Boreas/LPCXpresso/MisProyectos/DecibelimetroNuevo/Noviembre26/CargaNuevoF/RDB1768cmsis2_HostStringsDemo" -O0 -Os -g3 -Wall -c -fmessage-length=0 -fno-builtin -ffunction-sections -mcpu=cortex-m3 -mthumb -MMD -MP -MF"src/cr_startup_lpc176x.d" -MT"src/cr_startup_lpc176x.d" -o "src/cr_startup_lpc176x.o" "../src/cr_startup_lpc176x.c"
+../src/cr_startup_lpc176x.c:51:28: fatal error: system_LPC17xx.h: No such file or directory
+compilation terminated.
+make: *** [src/cr_startup_lpc176x.o] Error 1
+
+21:50:16 Build Finished (took 344ms)
+

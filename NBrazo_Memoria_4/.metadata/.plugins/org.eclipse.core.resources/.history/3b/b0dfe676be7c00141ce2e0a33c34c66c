@@ -1,0 +1,942 @@
+/***********************************************************************
+ * $Id::                                                               $
+ *
+ * Project:	buzzer_adc : PWM audio with frequency controlled via ADC
+ * File:	main.c
+ * Description:
+ * 			Read ADC and adjust PWM frequency accordingly. Uses
+ * 			SystemTick driven timer to modulate PWM duty cycle.
+ * 			When used with LPCXpresso Baseboard PWM can drive
+ * 			the speaker when connected with a jumper wire.
+ *
+ ***********************************************************************
+ * Software that is described herein is for illustrative purposes only
+ * which provides customers with programming information regarding the
+ * products. This software is supplied "AS IS" without any warranties.
+ * NXP Semiconductors assumes no responsibility or liability for the
+ * use of the software, conveys no license or title under any patent,
+ * copyright, or mask work right to the product. NXP Semiconductors
+ * reserves the right to make changes in the software without
+ * notification. NXP Semiconductors also make no representation or
+ * warranty that such application will be suitable for the specified
+ * use without further testing or modification.
+ **********************************************************************/
+
+#ifdef __USE_CMSIS
+#include "LPC17xx.h"
+#endif
+#include "freq.h"
+#include "adc.h"
+#include "debug.h"
+#include "small_systick.h"
+#include <stdint.h>
+#include "uart.h"
+#include "type.h"
+#include <string.h>
+#include "rtc.h"
+#include "iap_driver.h"
+#include <math.h>
+#include "cr_dsplib.h"
+
+// Variable to store CRP value in. Will be placed automatically
+// by the linker when "Enable Code Read Protect" selected.
+// See crp.h header for more information
+//__CRP const unsigned int CRP_WORD = CRP_NO_CRP ;
+
+/* Flash offset where the configuration is stored */
+#define CONFIG_FLASH_OFFSET            0x0000F000
+#define CONFIG_FLASH_SECTOR            (CONFIG_FLASH_OFFSET >> 12)
+#define CONFIG_FLASH_SECTOR_SIZE    1
+
+#define READ_FLASH(object, adr) (*((object volatile *) (adr)))
+
+#define LARGO 999
+#define CAMPO 50
+
+#define NPOINTS_64			64
+#define NPOINTS_256			256
+#define NPOINTS_1024		1024
+#define NPOINTS_4096		4096
+
+/* Define which function to test */
+//#define NPOINTS				NPOINTS_256
+#define NPOINTS				NPOINTS_1024
+
+
+volatile uint32_t SysTickCount;		/* counts 10ms timeTicks */
+uint32_t DelayStart_SysTickCount;
+
+extern volatile uint32_t UART1Count;
+extern volatile uint8_t UART1Buffer[BUFSIZE];
+
+volatile int16_t ValorOctava[3][20],AceleDecibel[3][20],AcelEficaz[3][2];
+volatile int16_t vector[3][1026],Fourier[3][1026];
+float AceEnvio[3][2];
+float TBS, TBH, TG, HR, TGBHIn, TGBHOut;
+uint16_t AN, ME, DI, HO, MI, SE;
+uint8_t FH[15];
+
+const float Octavas[20]={1,1.25,1.6,2,2.5,3.2,4,5,6.3,8,10,12.5,16,20,25,31,40,50,64,80};
+const uint8_t NumCanal[3]={0,1,4};
+
+const float W[4][35]={
+0.4,0.4,0.4,0.4,0.4825,
+0.4846,0.4935,0.5308,0.6335,0.8071,
+0.9648,1.039,1.054,1.037,0.9884,
+0.8989,0.7743,0.6373,0.5103,0.4031,
+0.316,0.2451,0.1857,0.1339,0.1,
+0.0989,0.0743,0.0373,0.0103,0.0031,
+0.0016,0.0005,0.0004,0.0003,0.0001,
+0.4,0.4,0.4,0.4,0.4825,
+1.011,1.007,0.9707,0.8913,0.6398,
+0.5143,0.4081,0.3226,0.255,0.2017,
+0.1597,0.1266,0.1004,0.0796,0.0630,
+0.0496,0.0387,0.0295,0.0213,0.0113,
+0.0097,0.0066,0.0055,0.0044,0.0030,
+0.0025,0.0025,0.0020,0.0013,0.0013,
+0.03,0.04,0.05,0.06,0.07,
+0.08,0.09,0.1,0.15,0.2,
+0.3,0.545,0.7272,0.8731,0.9514,
+0.9576,0.8958,0.782,0.6471,0.5192,
+0.4111,0.3244,0.256,0.2024,0.1602,
+0.127,0.1007,0.07988,0.06338,0.05026,
+0.0398,0.03137,0.02447,0.01862,0.01346,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+
+uint16_t Dia, Mes, Year, Hora, Minutos, Segundos;  // Para seteo
+volatile uint32_t inicio,final;
+volatile int8_t MatrizHR[41][17];
+const char* welcomeMsg = "SQue programon2:W";
+const char* saltolinea = "\n";
+const char* carreturn = "\r";
+//const char* saltolinea = 10;
+//const char* carreturn = 13;
+const char* coma = ",";
+char mens3[20], FechaHora[50];
+char aux[10];
+char cadena [2*LARGO];
+static char stringMemory[4*LARGO];
+char estafeta[50];
+uint16_t m,promedio[3];
+uint32_t diferencia;
+uint16_t c,q,Dale;
+uint8_t Sensor, NumFiltro, NumRepe;
+RTCTime local_time, alarm_time, current_time;
+__e_iap_status iap_status;
+
+//#include <stdio.h>
+
+
+/* Test functions */
+static void vTest_PerformFFT(void);
+
+/* Storage for FFT input and output values. Complex values are used consisting
+   of real and imaginary parts, hence the buffers are twice the number of
+   points */
+static short *psi_Input  = (short *)0x2007C000; /* AHB SRAM0 */
+static short *psi_Output = (short *)0x20080000; /* AHB SRAM1 */
+
+
+void MiraUART1(void);
+
+void GLCD_Bmp (unsigned char *bmp) {
+  unsigned int   j;
+  unsigned short *bitmap_ptr = (unsigned short *)bmp;
+  j=0;
+  strcpy(cadena,"");
+//  for (j = 0; j < 2*LARGO; j++) {
+  while((bitmap_ptr != NULL) && (j<2*LARGO)){
+	  //	  demo_messg_blank[j]=*bitmap_ptr++;
+	  cadena[j++]=*bitmap_ptr++;
+  }
+}
+
+void CargaMatriz(void)
+{
+   int a,b;
+   for(b=0;b<41;b++){
+         for(a=0;a<17;a++){
+
+             MatrizHR[b][a]=0;
+         }
+   }
+         MatrizHR[0][0]=94;MatrizHR[0][1]=88;MatrizHR[0][2]=82;MatrizHR[0][3]=76;
+         MatrizHR[0][4]=71;MatrizHR[0][5]=65;MatrizHR[0][6]=60;MatrizHR[0][7]=54;
+         MatrizHR[0][8]=49;MatrizHR[0][9]=44;MatrizHR[0][10]=39;MatrizHR[0][11]=34;
+         MatrizHR[0][12]=29;MatrizHR[0][13]=24;MatrizHR[0][14]=19;MatrizHR[0][15]=14;
+         MatrizHR[0][16]=10;
+
+         MatrizHR[1][0]=94;MatrizHR[1][1]=88;MatrizHR[1][2]=82;MatrizHR[1][3]=77;
+         MatrizHR[1][4]=72;MatrizHR[1][5]=66;MatrizHR[1][6]=61;MatrizHR[1][7]=56;
+         MatrizHR[1][8]=51;MatrizHR[1][9]=46;MatrizHR[1][10]=41;MatrizHR[1][11]=36;
+         MatrizHR[1][12]=31;MatrizHR[1][13]=27;MatrizHR[1][14]=22;MatrizHR[1][15]=17;
+         MatrizHR[1][16]=13;
+
+         MatrizHR[2][0]=94;MatrizHR[2][1]=88;MatrizHR[2][2]=83;MatrizHR[2][3]=78;
+         MatrizHR[2][4]=72;MatrizHR[2][5]=67;MatrizHR[2][6]=62;MatrizHR[2][7]=57;
+         MatrizHR[2][8]=52;MatrizHR[2][9]=48;MatrizHR[2][10]=43;MatrizHR[2][11]=38;
+         MatrizHR[2][12]=34;MatrizHR[2][13]=29;MatrizHR[2][14]=25;MatrizHR[2][15]=20;
+         MatrizHR[2][16]=16;
+
+         MatrizHR[3][0]=94;MatrizHR[3][1]=89;MatrizHR[3][2]=84;MatrizHR[3][3]=78;
+         MatrizHR[3][4]=73;MatrizHR[3][5]=68;MatrizHR[3][6]=63;MatrizHR[3][7]=59;
+         MatrizHR[3][8]=54;MatrizHR[3][9]=49;MatrizHR[3][10]=45;MatrizHR[3][11]=40;
+         MatrizHR[3][12]=36;MatrizHR[3][13]=31;MatrizHR[3][14]=27;MatrizHR[3][15]=23;
+         MatrizHR[3][16]=19;
+
+         MatrizHR[4][0]=94;MatrizHR[4][1]=89;MatrizHR[4][2]=84;MatrizHR[4][3]=79;
+         MatrizHR[4][4]=74;MatrizHR[4][5]=69;MatrizHR[4][6]=65;MatrizHR[4][7]=60;
+         MatrizHR[4][8]=55;MatrizHR[4][9]=51;MatrizHR[4][10]=46;MatrizHR[4][11]=42;
+         MatrizHR[4][12]=38;MatrizHR[4][13]=34;MatrizHR[4][14]=29;MatrizHR[4][15]=25;
+         MatrizHR[4][16]=21;
+
+         MatrizHR[5][0]=94;MatrizHR[5][1]=89;MatrizHR[5][2]=84;MatrizHR[5][3]=80;
+         MatrizHR[5][4]=75;MatrizHR[5][5]=79;MatrizHR[5][6]=66;MatrizHR[5][7]=61;
+         MatrizHR[5][8]=57;MatrizHR[5][9]=52;MatrizHR[5][10]=48;MatrizHR[5][11]=44;
+         MatrizHR[5][12]=40;MatrizHR[5][13]=36;MatrizHR[5][14]=32;MatrizHR[5][15]=28;
+         MatrizHR[5][16]=24;
+
+         MatrizHR[6][0]=95;MatrizHR[6][1]=90;MatrizHR[6][2]=85;MatrizHR[6][3]=80;
+         MatrizHR[6][4]=76;MatrizHR[6][5]=71;MatrizHR[6][6]=67;MatrizHR[6][7]=62;
+         MatrizHR[6][8]=58;MatrizHR[6][9]=54;MatrizHR[6][10]=50;MatrizHR[6][11]=45;
+         MatrizHR[6][12]=41;MatrizHR[6][13]=37;MatrizHR[6][14]=34;MatrizHR[6][15]=30;
+         MatrizHR[6][16]=26;
+
+         MatrizHR[7][0]=95;MatrizHR[7][1]=90;MatrizHR[7][2]=85;MatrizHR[7][3]=81;
+         MatrizHR[7][4]=76;MatrizHR[7][5]=72;MatrizHR[7][6]=68;MatrizHR[7][7]=63;
+         MatrizHR[7][8]=59;MatrizHR[7][9]=55;MatrizHR[7][10]=51;MatrizHR[7][11]=47;
+         MatrizHR[7][12]=43;MatrizHR[7][13]=39;MatrizHR[7][14]=35;MatrizHR[7][15]=32;
+         MatrizHR[7][16]=28;
+
+         MatrizHR[8][0]=95;MatrizHR[8][1]=90;MatrizHR[8][2]=86;MatrizHR[8][3]=81;
+         MatrizHR[8][4]=77;MatrizHR[8][5]=73;MatrizHR[8][6]=68;MatrizHR[8][7]=64;
+         MatrizHR[8][8]=60;MatrizHR[8][9]=56;MatrizHR[8][10]=52;MatrizHR[8][11]=48;
+         MatrizHR[8][12]=45;MatrizHR[8][13]=41;MatrizHR[8][14]=37;MatrizHR[8][15]=34;
+         MatrizHR[8][16]=30;
+
+
+         MatrizHR[9][0]=95;MatrizHR[9][1]=90;MatrizHR[9][2]=86;MatrizHR[9][3]=82;
+         MatrizHR[9][4]=77;MatrizHR[9][5]=73;MatrizHR[9][6]=69;MatrizHR[9][7]=65;
+         MatrizHR[9][8]=61;MatrizHR[9][9]=57;MatrizHR[9][10]=54;MatrizHR[9][11]=50;
+         MatrizHR[9][12]=46;MatrizHR[9][13]=42;MatrizHR[9][14]=39;MatrizHR[9][15]=35;
+         MatrizHR[9][16]=32;
+
+
+         MatrizHR[10][0]=95;MatrizHR[10][1]=91;MatrizHR[10][2]=86;MatrizHR[10][3]=82;
+         MatrizHR[10][4]=78;MatrizHR[10][5]=74;MatrizHR[10][6]=70;MatrizHR[10][7]=66;
+         MatrizHR[10][8]=62;MatrizHR[10][9]=58;MatrizHR[10][10]=55;MatrizHR[10][11]=51;
+         MatrizHR[10][12]=47;MatrizHR[10][13]=44;MatrizHR[10][14]=40;MatrizHR[10][15]=37;
+         MatrizHR[10][16]=34;
+
+
+         MatrizHR[11][0]=95;MatrizHR[11][1]=91;MatrizHR[11][2]=87;MatrizHR[11][3]=83;
+         MatrizHR[11][4]=79;MatrizHR[11][5]=75;MatrizHR[11][6]=71;MatrizHR[11][7]=67;
+         MatrizHR[11][8]=63;MatrizHR[11][9]=59;MatrizHR[11][10]=56;MatrizHR[11][11]=52;
+         MatrizHR[11][12]=49;MatrizHR[11][13]=45;MatrizHR[11][14]=42;MatrizHR[11][15]=39;
+         MatrizHR[11][16]=35;
+
+         MatrizHR[12][0]=95;MatrizHR[12][1]=91;MatrizHR[12][2]=87;MatrizHR[12][3]=83;
+         MatrizHR[12][4]=79;MatrizHR[12][5]=75;MatrizHR[12][6]=71;MatrizHR[12][7]=68;
+         MatrizHR[12][8]=64;MatrizHR[12][9]=60;MatrizHR[12][10]=57;MatrizHR[12][11]=53;
+         MatrizHR[12][12]=50;MatrizHR[12][13]=47;MatrizHR[12][14]=43;MatrizHR[12][15]=40;
+         MatrizHR[12][16]=37;
+
+         MatrizHR[13][0]=95;MatrizHR[13][1]=91;MatrizHR[13][2]=87;MatrizHR[13][3]=83;
+         MatrizHR[13][4]=80;MatrizHR[13][5]=76;MatrizHR[13][6]=72;MatrizHR[13][7]=68;
+         MatrizHR[13][8]=65;MatrizHR[13][9]=61;MatrizHR[13][10]=58;MatrizHR[13][11]=54;
+         MatrizHR[13][12]=51;MatrizHR[13][13]=48;MatrizHR[13][14]=45;MatrizHR[13][15]=42;
+         MatrizHR[13][16]=38;
+
+         MatrizHR[14][0]=95;MatrizHR[14][1]=91;MatrizHR[14][2]=88;MatrizHR[14][3]=84;
+         MatrizHR[14][4]=80;MatrizHR[14][5]=76;MatrizHR[14][6]=73;MatrizHR[14][7]=69;
+         MatrizHR[14][8]=66;MatrizHR[14][9]=62;MatrizHR[14][10]=59;MatrizHR[14][11]=55;
+         MatrizHR[14][12]=52;MatrizHR[14][13]=49;MatrizHR[14][14]=46;MatrizHR[14][15]=43;
+         MatrizHR[14][16]=40;
+
+         MatrizHR[15][0]=96;MatrizHR[15][1]=92;MatrizHR[15][2]=88;MatrizHR[15][3]=84;
+         MatrizHR[15][4]=80;MatrizHR[15][5]=77;MatrizHR[15][6]=73;MatrizHR[15][7]=70;
+         MatrizHR[15][8]=66;MatrizHR[15][9]=63;MatrizHR[15][10]=60;MatrizHR[15][11]=56;
+         MatrizHR[15][12]=53;MatrizHR[15][13]=40;MatrizHR[15][14]=47;MatrizHR[15][15]=44;
+         MatrizHR[15][16]=41;
+
+         MatrizHR[16][0]=96;MatrizHR[16][1]=92;MatrizHR[16][2]=88;MatrizHR[16][3]=84;
+         MatrizHR[16][4]=81;MatrizHR[16][5]=77;MatrizHR[16][6]=74;MatrizHR[16][7]=70;
+         MatrizHR[16][8]=67;MatrizHR[16][9]=64;MatrizHR[16][10]=61;MatrizHR[16][11]=57;
+         MatrizHR[16][12]=54;MatrizHR[16][13]=51;MatrizHR[16][14]=48;MatrizHR[16][15]=45;
+         MatrizHR[16][16]=42;
+
+         MatrizHR[17][0]=96;MatrizHR[17][1]=92;MatrizHR[17][2]=88;MatrizHR[17][3]=85;
+         MatrizHR[17][4]=81;MatrizHR[17][5]=78;MatrizHR[17][6]=74;MatrizHR[17][7]=71;
+         MatrizHR[17][8]=68;MatrizHR[17][9]=64;MatrizHR[17][10]=61;MatrizHR[17][11]=58;
+         MatrizHR[17][12]=55;MatrizHR[17][13]=52;MatrizHR[17][14]=49;MatrizHR[17][15]=46;
+         MatrizHR[17][16]=44;
+
+         MatrizHR[18][0]=96;MatrizHR[18][1]=92;MatrizHR[18][2]=88;MatrizHR[18][3]=85;
+         MatrizHR[18][4]=82;MatrizHR[18][5]=78;MatrizHR[18][6]=75;MatrizHR[18][7]=72;
+         MatrizHR[18][8]=68;MatrizHR[18][9]=65;MatrizHR[18][10]=62;MatrizHR[18][11]=59;
+         MatrizHR[18][12]=56;MatrizHR[18][13]=53;MatrizHR[18][14]=50;MatrizHR[18][15]=48;
+         MatrizHR[18][16]=45;
+
+         MatrizHR[19][0]=96;MatrizHR[19][1]=92;MatrizHR[19][2]=88;MatrizHR[19][3]=85;
+         MatrizHR[19][4]=82;MatrizHR[19][5]=79;MatrizHR[19][6]=75;MatrizHR[19][7]=72;
+         MatrizHR[19][8]=69;MatrizHR[19][9]=66;MatrizHR[19][10]=63;MatrizHR[19][11]=60;
+         MatrizHR[19][12]=57;MatrizHR[19][13]=54;MatrizHR[19][14]=51;MatrizHR[19][15]=49;
+         MatrizHR[19][16]=46;
+
+         MatrizHR[20][0]=96;MatrizHR[20][1]=92;MatrizHR[20][2]=89;MatrizHR[20][3]=86;
+         MatrizHR[20][4]=82;MatrizHR[20][5]=79;MatrizHR[20][6]=75;MatrizHR[20][7]=73;
+         MatrizHR[20][8]=69;MatrizHR[20][9]=66;MatrizHR[20][10]=63;MatrizHR[20][11]=61;
+         MatrizHR[20][12]=58;MatrizHR[20][13]=55;MatrizHR[20][14]=52;MatrizHR[20][15]=49;
+         MatrizHR[20][16]=47;
+
+         MatrizHR[21][0]=96;MatrizHR[21][1]=92;MatrizHR[21][2]=89;MatrizHR[21][3]=86;
+         MatrizHR[21][4]=82;MatrizHR[21][5]=79;MatrizHR[21][6]=75;MatrizHR[21][7]=73;
+         MatrizHR[21][8]=70;MatrizHR[21][9]=67;MatrizHR[21][10]=64;MatrizHR[21][11]=61;
+         MatrizHR[21][12]=58;MatrizHR[21][13]=56;MatrizHR[21][14]=53;MatrizHR[21][15]=50;
+         MatrizHR[21][16]=48;
+
+         MatrizHR[22][0]=96;MatrizHR[22][1]=93;MatrizHR[22][2]=89;MatrizHR[22][3]=86;
+         MatrizHR[22][4]=83;MatrizHR[22][5]=80;MatrizHR[22][6]=77;MatrizHR[22][7]=74;
+         MatrizHR[22][8]=71;MatrizHR[22][9]=68;MatrizHR[22][10]=65;MatrizHR[22][11]=62;
+         MatrizHR[22][12]=59;MatrizHR[22][13]=57;MatrizHR[22][14]=54;MatrizHR[22][15]=51;
+         MatrizHR[22][16]=49;
+
+         MatrizHR[23][0]=96;MatrizHR[23][1]=93;MatrizHR[23][2]=89;MatrizHR[23][3]=86;
+         MatrizHR[23][4]=83;MatrizHR[23][5]=80;MatrizHR[23][6]=77;MatrizHR[23][7]=74;
+         MatrizHR[23][8]=71;MatrizHR[23][9]=68;MatrizHR[23][10]=65;MatrizHR[23][11]=63;
+         MatrizHR[23][12]=60;MatrizHR[23][13]=57;MatrizHR[23][14]=55;MatrizHR[23][15]=52;
+         MatrizHR[23][16]=50;
+
+         MatrizHR[24][0]=96;MatrizHR[24][1]=93;MatrizHR[24][2]=90;MatrizHR[24][3]=86;
+         MatrizHR[24][4]=83;MatrizHR[24][5]=80;MatrizHR[24][6]=77;MatrizHR[24][7]=74;
+         MatrizHR[24][8]=71;MatrizHR[24][9]=69;MatrizHR[24][10]=66;MatrizHR[24][11]=63;
+         MatrizHR[24][12]=61;MatrizHR[24][13]=58;MatrizHR[24][14]=55;MatrizHR[24][15]=53;
+         MatrizHR[24][16]=50;
+
+         MatrizHR[25][0]=96;MatrizHR[25][1]=93;MatrizHR[25][2]=90;MatrizHR[25][3]=87;
+         MatrizHR[25][4]=84;MatrizHR[25][5]=81;MatrizHR[25][6]=78;MatrizHR[25][7]=75;
+         MatrizHR[25][8]=72;MatrizHR[25][9]=69;MatrizHR[25][10]=66;MatrizHR[25][11]=64;
+         MatrizHR[25][12]=61;MatrizHR[25][13]=59;MatrizHR[25][14]=56;MatrizHR[25][15]=54;
+         MatrizHR[25][16]=51;
+
+         MatrizHR[26][0]=96;MatrizHR[26][1]=93;MatrizHR[26][2]=90;MatrizHR[26][3]=87;
+         MatrizHR[26][4]=84;MatrizHR[26][5]=81;MatrizHR[26][6]=78;MatrizHR[26][7]=75;
+         MatrizHR[26][8]=72;MatrizHR[26][9]=70;MatrizHR[26][10]=67;MatrizHR[26][11]=64;
+         MatrizHR[26][12]=62;MatrizHR[26][13]=59;MatrizHR[26][14]=57;MatrizHR[26][15]=54;
+         MatrizHR[26][16]=52;
+
+         MatrizHR[27][0]=96;MatrizHR[27][1]=93;MatrizHR[27][2]=90;MatrizHR[27][3]=87;
+         MatrizHR[27][4]=84;MatrizHR[27][5]=81;MatrizHR[27][6]=78;MatrizHR[27][7]=76;
+         MatrizHR[27][8]=73;MatrizHR[27][9]=70;MatrizHR[27][10]=67;MatrizHR[27][11]=65;
+         MatrizHR[27][12]=62;MatrizHR[27][13]=60;MatrizHR[27][14]=57;MatrizHR[27][15]=55;
+         MatrizHR[27][16]=53;
+
+         MatrizHR[28][0]=96;MatrizHR[28][1]=93;MatrizHR[28][2]=90;MatrizHR[28][3]=87;
+         MatrizHR[28][4]=84;MatrizHR[28][5]=81;MatrizHR[28][6]=79;MatrizHR[28][7]=76;
+         MatrizHR[28][8]=73;MatrizHR[28][9]=71;MatrizHR[28][10]=68;MatrizHR[28][11]=65;
+         MatrizHR[28][12]=63;MatrizHR[28][13]=60;MatrizHR[28][14]=58;MatrizHR[28][15]=56;
+         MatrizHR[28][16]=53;
+
+         MatrizHR[29][0]=96;MatrizHR[29][1]=93;MatrizHR[29][2]=90;MatrizHR[29][3]=87;
+         MatrizHR[29][4]=85;MatrizHR[29][5]=82;MatrizHR[29][6]=79;MatrizHR[29][7]=76;
+         MatrizHR[29][8]=74;MatrizHR[29][9]=71;MatrizHR[29][10]=68;MatrizHR[29][11]=66;
+         MatrizHR[29][12]=63;MatrizHR[29][13]=61;MatrizHR[29][14]=59;MatrizHR[29][15]=56;
+         MatrizHR[29][16]=54;
+
+         MatrizHR[30][0]=96;MatrizHR[30][1]=93;MatrizHR[30][2]=90;MatrizHR[30][3]=88;
+         MatrizHR[30][4]=85;MatrizHR[30][5]=82;MatrizHR[30][6]=79;MatrizHR[30][7]=77;
+         MatrizHR[30][8]=74;MatrizHR[30][9]=71;MatrizHR[30][10]=69;MatrizHR[30][11]=66;
+         MatrizHR[30][12]=64;MatrizHR[30][13]=62;MatrizHR[30][14]=59;MatrizHR[30][15]=57;
+         MatrizHR[30][16]=55;
+
+         MatrizHR[31][0]=96;MatrizHR[31][1]=94;MatrizHR[31][2]=91;MatrizHR[31][3]=88;
+         MatrizHR[31][4]=85;MatrizHR[31][5]=82;MatrizHR[31][6]=80;MatrizHR[31][7]=77;
+         MatrizHR[31][8]=74;MatrizHR[31][9]=72;MatrizHR[31][10]=69;MatrizHR[31][11]=67;
+         MatrizHR[31][12]=64;MatrizHR[31][13]=62;MatrizHR[31][14]=60;MatrizHR[31][15]=58;
+         MatrizHR[31][16]=55;
+
+         MatrizHR[32][0]=97;MatrizHR[32][1]=94;MatrizHR[32][2]=91;MatrizHR[32][3]=88;
+         MatrizHR[32][4]=85;MatrizHR[32][5]=82;MatrizHR[32][6]=80;MatrizHR[32][7]=77;
+         MatrizHR[32][8]=75;MatrizHR[32][9]=72;MatrizHR[32][10]=70;MatrizHR[32][11]=67;
+         MatrizHR[32][12]=65;MatrizHR[32][13]=63;MatrizHR[32][14]=60;MatrizHR[32][15]=58;
+         MatrizHR[32][16]=56;
+
+         MatrizHR[33][0]=97;MatrizHR[33][1]=94;MatrizHR[33][2]=91;MatrizHR[33][3]=88;
+         MatrizHR[33][4]=85;MatrizHR[33][5]=83;MatrizHR[33][6]=80;MatrizHR[33][7]=77;
+         MatrizHR[33][8]=75;MatrizHR[33][9]=72;MatrizHR[33][10]=70;MatrizHR[33][11]=68;
+         MatrizHR[33][12]=65;MatrizHR[33][13]=63;MatrizHR[33][14]=61;MatrizHR[33][15]=59;
+         MatrizHR[33][16]=56;
+
+         MatrizHR[34][0]=97;MatrizHR[34][1]=94;MatrizHR[34][2]=91;MatrizHR[34][3]=88;
+         MatrizHR[34][4]=86;MatrizHR[34][5]=83;MatrizHR[34][6]=80;MatrizHR[34][7]=78;
+         MatrizHR[34][8]=75;MatrizHR[34][9]=73;MatrizHR[34][10]=70;MatrizHR[34][11]=68;
+         MatrizHR[34][12]=66;MatrizHR[34][13]=64;MatrizHR[34][14]=61;MatrizHR[34][15]=59;
+         MatrizHR[34][16]=57;
+
+         MatrizHR[35][0]=97;MatrizHR[35][1]=94;MatrizHR[35][2]=91;MatrizHR[35][3]=88;
+         MatrizHR[35][4]=86;MatrizHR[35][5]=83;MatrizHR[35][6]=81;MatrizHR[35][7]=78;
+         MatrizHR[35][8]=76;MatrizHR[35][9]=73;MatrizHR[35][10]=71;MatrizHR[35][11]=68;
+         MatrizHR[35][12]=66;MatrizHR[35][13]=64;MatrizHR[35][14]=62;MatrizHR[35][15]=60;
+         MatrizHR[35][16]=58;
+
+         MatrizHR[36][0]=97;MatrizHR[36][1]=94;MatrizHR[36][2]=91;MatrizHR[36][3]=88;
+         MatrizHR[36][4]=86;MatrizHR[36][5]=83;MatrizHR[36][6]=81;MatrizHR[36][7]=78;
+         MatrizHR[36][8]=76;MatrizHR[36][9]=73;MatrizHR[36][10]=71;MatrizHR[36][11]=69;
+         MatrizHR[36][12]=67;MatrizHR[36][13]=64;MatrizHR[36][14]=62;MatrizHR[36][15]=60;
+         MatrizHR[36][16]=58;
+
+         MatrizHR[37][0]=97;MatrizHR[37][1]=94;MatrizHR[37][2]=91;MatrizHR[37][3]=89;
+         MatrizHR[37][4]=86;MatrizHR[37][5]=83;MatrizHR[37][6]=81;MatrizHR[37][7]=79;
+         MatrizHR[37][8]=76;MatrizHR[37][9]=74;MatrizHR[37][10]=71;MatrizHR[37][11]=69;
+         MatrizHR[37][12]=67;MatrizHR[37][13]=65;MatrizHR[37][14]=63;MatrizHR[37][15]=61;
+         MatrizHR[37][16]=59;
+
+         MatrizHR[38][0]=97;MatrizHR[38][1]=94;MatrizHR[38][2]=91;MatrizHR[38][3]=89;
+         MatrizHR[38][4]=86;MatrizHR[38][5]=84;MatrizHR[38][6]=81;MatrizHR[38][7]=79;
+         MatrizHR[38][8]=76;MatrizHR[38][9]=74;MatrizHR[38][10]=72;MatrizHR[38][11]=70;
+         MatrizHR[38][12]=67;MatrizHR[38][13]=65;MatrizHR[38][14]=63;MatrizHR[38][15]=61;
+         MatrizHR[38][16]=59;
+
+         MatrizHR[39][0]=97;MatrizHR[39][1]=94;MatrizHR[39][2]=91;MatrizHR[39][3]=89;
+         MatrizHR[39][4]=86;MatrizHR[39][5]=84;MatrizHR[39][6]=81;MatrizHR[39][7]=79;
+         MatrizHR[39][8]=77;MatrizHR[39][9]=74;MatrizHR[39][10]=72;MatrizHR[39][11]=70;
+         MatrizHR[39][12]=68;MatrizHR[39][13]=66;MatrizHR[39][14]=63;MatrizHR[39][15]=61;
+         MatrizHR[39][16]=59;
+
+         MatrizHR[40][0]=97;MatrizHR[40][1]=94;MatrizHR[40][2]=92;MatrizHR[40][3]=89;
+         MatrizHR[40][4]=86;MatrizHR[40][5]=84;MatrizHR[40][6]=82;MatrizHR[40][7]=79;
+         MatrizHR[40][8]=77;MatrizHR[40][9]=75;MatrizHR[40][10]=72;MatrizHR[40][11]=70;
+         MatrizHR[40][12]=68;MatrizHR[40][13]=66;MatrizHR[40][14]=64;MatrizHR[40][15]=62;
+         MatrizHR[40][16]=60;
+}
+
+
+char* itoa(int i, char b[]){
+    char const digit[] = "0123456789";
+    char* p = b;
+    if(i<0){
+        *p++ = '-';
+        i *= -1;
+    }
+    int shifter = i;
+    do{ //Move to where representation ends
+        ++p;
+        shifter = shifter/10;
+    }while(shifter);
+    *p = '\0';
+    do{ //Move back, inserting digits as u go
+        *--p = digit[i%10];
+        i = i/10;
+    }while(i);
+    return b;
+}
+/*----------------------------------------------------------------------------
+  SysTick_Handler
+ *----------------------------------------------------------------------------*/
+void SysTick_Handler(void)
+{
+    SysTickCount++; 				/* increment counter necessary in Delay() */
+}
+
+void IniciarVariables(void){
+	uint32_t k,j;
+    for(k=0;k<3;k++){
+        for(j=0;j<1026;j++){
+        	vector[k][j]=0;
+        }
+    }
+}
+
+
+void MandarVector(void)
+{
+	char coso[10];
+	UARTSend(1, (uint8_t *)"S" ,1 );
+
+//	for(m=0;m<NPOINTS;m++){
+	for(m=0;m<NPOINTS;m++){
+	    itoa(vector[0][m],mens3);
+	    coso[0]=13;
+	    coso[1]=10;
+	    strcat(mens3,coso);
+		UARTSend(1, (uint8_t *)mens3 , strlen(mens3) );
+	}
+	for(m=0;m<NPOINTS;m++){
+	    itoa(Fourier[0][m],mens3);
+	    coso[0]=13;
+	    coso[1]=10;
+	    strcat(mens3,coso);
+		UARTSend(1, (uint8_t *)mens3 , strlen(mens3) );
+	}
+	for(m=0;m<20;m++){
+	    itoa(ValorOctava[0][m],mens3);
+	    coso[0]=13;
+	    coso[1]=10;
+	    strcat(mens3,coso);
+		UARTSend(1, (uint8_t *)mens3 , strlen(mens3) );
+	}
+	for(m=0;m<20;m++){
+	    itoa(AceleDecibel[0][m],mens3);
+	    coso[0]=13;
+	    coso[1]=10;
+	    strcat(mens3,coso);
+		UARTSend(1, (uint8_t *)mens3 , strlen(mens3) );
+	}
+	for(m=0;m<2;m++){
+	    itoa(AceEnvio[0][m],mens3);
+	    coso[0]=13;
+	    coso[1]=10;
+	    strcat(mens3,coso);
+		UARTSend(1, (uint8_t *)mens3 , strlen(mens3) );
+	}
+
+    itoa(diferencia,mens3);
+    coso[0]=13;
+    coso[1]=10;
+    strcat(mens3,coso);
+	UARTSend(1, (uint8_t *)mens3 , strlen(mens3) );
+//	UARTSend(1, (uint8_t *)saltolinea , strlen(saltolinea) );
+//	UARTSend(1, (uint8_t *)carreturn , strlen(carreturn) );
+    itoa(promedio[0],mens3);
+	UARTSend(1, (uint8_t *)mens3 , strlen(mens3) );
+
+	UARTSend(1, (uint8_t *)"W" ,1 );
+}
+
+void CalculoRMS(uint8_t p){        //
+	int k,auxi1;
+   float auxi2, auxi3, numerito1, numerito2;
+      if(Sensor==1 && p==0) NumFiltro=0;
+      if(Sensor==1 && p==1) NumFiltro=1;
+      if(Sensor==1 && p==2) NumFiltro=1;
+      if(Sensor==0) NumFiltro=2;
+
+      numerito1=0;
+      numerito2=0;
+
+      for (k=0;k<20;k++)
+          {
+            numerito1 = numerito1 + (float)(ValorOctava[p][k]*ValorOctava[p][k]);
+            numerito2 = numerito2 + (float)(W[NumFiltro][k+4]*ValorOctava[p][k]*W[NumFiltro][k+4]*ValorOctava[p][k]);
+          }
+
+      auxi2=0.71*sqrt(numerito1)/76;   // divido por 76 para expresar en [m/seg2]
+      AceEnvio[p][0]=auxi2*100.0;
+      auxi1=(int)floor(auxi2);
+		AcelEficaz[p][0]=auxi1;
+      auxi3=auxi2-floor(auxi2);
+      if(auxi3>0.5) AcelEficaz[p][0]=auxi1+1;
+ //     AcelEficaz[j][0]=(long int)(0.71*sqrt(numerito1)/76);   // divido por 76 para expresar en [m/seg2]
+   //   AcelEficaz[j][1]=(long int)(0.71*sqrt(numerito2)/76);   // idem
+      auxi2=0.71*sqrt(numerito2)/76;   // divido por 76 para expresar en [m/seg2]
+      AceEnvio[p][1]=auxi2*100.0;
+      auxi1=(int)floor(auxi2);
+		AcelEficaz[p][1]=auxi1;
+      auxi3=auxi2-floor(auxi2);
+      if(auxi3>0.5) AcelEficaz[p][1]=auxi1+1;
+}
+
+void AnalisisFrec(uint8_t p){
+int iMagnitude, Condicion1,  j, k;
+float numerito1, numerito2;
+	for(j = 0; j < NPOINTS; j++)
+	{
+		psi_Input[2 * j] = (short int)vector[p][j];
+		// Immaginary part of value n
+		psi_Input[(2 * j) + 1] = 0;
+	}
+
+	// Perform defined FFT function
+	vTest_PerformFFT();
+
+	for(j = 0; j < NPOINTS; j++)
+	{
+		iMagnitude = (int)sqrt((pow(psi_Output[2 * j], 2) +
+						   pow(psi_Output[(2 * j) + 1], 2)));
+
+		Fourier[p][j]= iMagnitude;		// AGREGADO
+	}
+
+	   Condicion1=0;
+	   k=0;
+	   m=0;
+//	   LapsoMed=(float)(diferencia/10000);
+	   for (k=0;k<20;k++)  // Inicializa en cero
+	     {
+	         Condicion1=0;
+	         do{
+	            ValorOctava[p][k]+=Fourier[p][m];
+	            m++;
+	            numerito1=(float)(m*10000.0/diferencia);
+	            numerito2=Octavas[k]*1.123;
+	            if(numerito1>numerito2) Condicion1=1;
+	            if(m>1000) Condicion1=1;
+	         }while(!Condicion1);
+	     }
+}
+void Medicion(void){
+	uint32_t i,k,j,m,auxiliar1,auxiliar2;
+    LPC_GPIO0->FIOSET = (1 << 22); // Turn LED2 on
+    IniciarVariables();
+    inicio=SysTickCount;
+    for(k=0;k<3;k++){
+    	for(i=0;i<NPOINTS;i++)
+		{
+			auxiliar1=0;
+			for(j=0;j<10;j++){
+				auxiliar1 += ADC0Read(NumCanal[k]);	//Convert AD to Frequency
+				for(m=0;m<3;m++);
+			};
+			vector[k][i]=(int)(auxiliar1/100);
+		}
+    }
+    final=SysTickCount;
+    diferencia=final-inicio;
+    LPC_GPIO0->FIOCLR = (1 << 22); // Turn LED2 off
+    for(k=0;k<3;k++){
+		auxiliar2=0;
+		for(i=0;i<NPOINTS;i++){
+			auxiliar2+=vector[k][i];
+		}
+		promedio[k]=(int)(auxiliar2/NPOINTS);
+
+		for(i=0;i<NPOINTS;i++){
+			vector[k][i]-=promedio[k];
+		}
+		AnalisisFrec(k);
+	}
+
+    for(j=0;j<3;j++){
+    	for (k=0;k<20;k++)
+        {
+          if(ValorOctava[j][k]>0) AceleDecibel[j][k]=(long)(20*log10(ValorOctava[j][k]/0.000076));
+        }
+        CalculoRMS(j);
+    }
+}
+
+int main(void)
+{
+//	uint16_t salid;
+//	__e_iap_status iap_status;
+    SystemInit();	//Called by startup code
+    /* Init the IAP driver */
+    iap_init();
+
+    // Set P0_22 to 00 - GPIO
+    LPC_PINCON->PINSEL1 &= (~(3 << 12));
+    LPC_GPIO0->FIODIR |= (1 << 22);
+
+    for(c=0; c<2*LARGO; c++) cadena[c]=0;
+    strcpy(cadena,"");
+    strcpy(estafeta,"");
+    CargaMatriz();
+	ADCInit(8000000);	// inicializa el ADC con velocidad de muestreo rápida
+    InitSysTick(1);
+	UARTInit(1, 115200);
+	UART1Count = 0;
+    LPC_GPIO0->FIOCLR = (1 << 22); // Turn LED2 off
+    /* Initialize RTC module */
+    RTCInit();
+    NVIC_EnableIRQ(RTC_IRQn);
+    LPC_RTC->CIIR = IMMIN | IMYEAR;
+    /* 2007/01/01/00:00:00 is the alarm on */
+    RTCStart();
+    // Inicializacion de variable medidas.
+    TBS = 20.3;
+    TBH = 20.4;
+    TG = 20.5;
+    HR = 0;
+    TGBHIn = 0;
+    TGBHOut = 0;
+    q=0;
+    strcpy(aux,"4567");
+    Dale=1;
+    NumRepe=1;
+	while (Dale)
+	{
+		MiraUART1();
+	}
+    return 0;
+}
+
+void BorraYGraba(void){
+	/* Prepare for Erase the sector */
+	iap_status = (__e_iap_status) iap_prepare_sector(CONFIG_FLASH_SECTOR,
+			(CONFIG_FLASH_SECTOR + CONFIG_FLASH_SECTOR_SIZE));
+//	if (iap_status != CMD_SUCCESS) UARTSend(1, (uint8_t *)"Error 1", 7 );
+	/* Erase the sector */
+	iap_status = (__e_iap_status) iap_erase_sector(CONFIG_FLASH_SECTOR,
+			(CONFIG_FLASH_SECTOR + CONFIG_FLASH_SECTOR_SIZE));
+//	if (iap_status != CMD_SUCCESS) UARTSend(1, (uint8_t *)"Error 2", 7 );
+	/* Prepare the sector for writing */
+	iap_status = (__e_iap_status) iap_prepare_sector(CONFIG_FLASH_SECTOR,
+			(CONFIG_FLASH_SECTOR + CONFIG_FLASH_SECTOR_SIZE));
+//	if (iap_status != CMD_SUCCESS) UARTSend(1, (uint8_t *)"Error 3", 7 );
+	/* write data to flash */
+	//iap_status = (__e_iap_status) iap_copy_ram_to_flash(&demo_messg, (void *)CONFIG_FLASH_OFFSET, 4096);//256);
+	iap_status = (__e_iap_status) iap_copy_ram_to_flash(&stringMemory, (void *)CONFIG_FLASH_OFFSET, 4096);
+
+//	if (iap_status != CMD_SUCCESS) UARTSend(1, (uint8_t *)"Error 4", 7 );
+}
+
+void LeeMemoria(void){
+	GLCD_Bmp((uint8_t *)( CONFIG_FLASH_OFFSET));//+CONFIG_FLASH_SECTOR ));
+}
+
+void BorraMemoria(){
+	strcpy(cadena,"");
+	for(c=0; c<2*LARGO; c++) stringMemory[2*c] = cadena[c];
+}
+
+void Concatena(void){
+	strcat(cadena, FechaHora);
+	for(c=0; c<2*LARGO; c++) stringMemory[2*c] = cadena[c];
+}
+
+void DesculaFH(void){
+uint16_t m;
+	while (estafeta[m] != '\0'){
+	FH[m]=estafeta[m]-48;
+	m++;
+	}
+	Dia=10*FH[1]+FH[2]; if(Dia>90) Dia -=90;
+	Mes=10*FH[3]+FH[4]; if(Mes>90) Mes -=90;
+	Year=10*FH[5]+FH[6]; Year +=2000;
+	Hora=10*FH[7]+FH[8]; if(Hora>90) Hora -=90;
+	Minutos=10*FH[9]+FH[10]; if(Minutos>90) Minutos -=90;
+	Segundos=10*FH[11]+FH[12]; if(Segundos>90) Segundos -=90;
+}
+
+void SeteaLocalTime(void){
+    local_time.RTC_Sec = Segundos;
+    local_time.RTC_Min = Minutos;
+    local_time.RTC_Hour = Hora;
+    local_time.RTC_Mday = 8;
+    local_time.RTC_Wday = 3;
+    local_time.RTC_Yday = Dia;
+    local_time.RTC_Mon = Mes;
+    local_time.RTC_Year = Year;
+
+    RTCSetTime( local_time );		// Set local time
+}
+
+void RecibeFechaHora(){
+	while(UART1Buffer[q]!='J'){
+		estafeta[q]=UART1Buffer[q];
+		q++;
+	}
+	q=0;
+	DesculaFH();
+	SeteaLocalTime();
+	UART1Count = 0;
+}
+
+
+void ConstruyeFH(void){
+	current_time = RTCGetTime();
+	DI=current_time.RTC_Yday;
+	ME=current_time.RTC_Mon;
+	AN=current_time.RTC_Year;
+	HO=current_time.RTC_Hour;
+	MI=current_time.RTC_Min;
+	SE=current_time.RTC_Sec;
+
+	strcpy(FechaHora, "");
+
+	if(DI<10) DI +=90;
+	itoa(DI, aux);
+	strcat(FechaHora, aux);
+
+	if(ME<10) ME +=90;
+	itoa(ME, aux);
+	strcat(FechaHora, aux);
+
+	AN-=2000;
+	itoa(AN, aux);
+	strcat(FechaHora, aux);
+
+	if(HO<10) HO+=90;
+	itoa(HO, aux);
+	strcat(FechaHora, aux);
+
+	if(MI<10) MI+=90;
+	itoa(MI, aux);
+	strcat(FechaHora, aux);
+
+	if(SE<10) SE+=90;
+	itoa(SE, aux);
+	strcat(FechaHora, aux);
+}
+
+
+
+void EnviaInfo(void){
+	LPC_UART1->IER = IER_THRE | IER_RLS;
+	UARTSend(1, (uint8_t *)"S" ,1 );
+	UARTSend(1, (uint8_t *)estafeta, strlen(estafeta) );
+	UARTSend(1, (uint8_t *)"W" ,1 );
+	UART1Count = 0;
+	LPC_UART1->IER = IER_THRE | IER_RLS | IER_RBR;
+}
+void MiraUART1(void){
+	if ( UART1Count != 0 )
+	{
+		switch(UART1Buffer[0]){
+		case 'R':	// BORRA Y GRABA
+			LPC_UART1->IER = IER_THRE | IER_RLS;
+			BorraYGraba();
+			UARTSend(1, (uint8_t *)"Fin de codigo escritura en flash", 34 );
+			UART1Count = 0;
+			LPC_UART1->IER = IER_THRE | IER_RLS | IER_RBR;
+
+		break;
+		case 'T':	// LEE MEMORIA Y ENVIA A PC (TERMINA EN 'W')
+			LPC_UART1->IER = IER_THRE | IER_RLS;
+			LeeMemoria();
+			UARTSend(1, (uint8_t *)cadena, strlen(cadena) );
+			UARTSend(1, (uint8_t *)"W", 3 );
+			UART1Count = 0;
+			LPC_UART1->IER = IER_THRE | IER_RLS | IER_RBR;
+			LPC_GPIO0->FIOSET = (1 << 22); // Turn LED2 on
+		break;
+		case 'B':	//Borrar
+			LPC_UART1->IER = IER_THRE | IER_RLS;
+			UARTSend(1, (uint8_t *)UART1Buffer, UART1Count );
+			BorraMemoria();
+			UARTSend(1, (uint8_t *)stringMemory, strlen(stringMemory));
+			UARTSend(1, (uint8_t *)"Fin de borrado en flash", 25 );
+			UART1Count = 0;
+			LPC_UART1->IER = IER_THRE | IER_RLS | IER_RBR;
+
+		break;
+		case 'C':
+			LPC_UART1->IER = IER_THRE | IER_RLS;
+			UARTSend(1, (uint8_t *)UART1Buffer, UART1Count );
+			Concatena();
+			UARTSend(1, (uint8_t *)stringMemory, strlen(stringMemory));
+			UARTSend(1, (uint8_t *)"Fin de concatenado en flash", 29 );
+			UART1Count = 0;
+			LPC_UART1->IER = IER_THRE | IER_RLS | IER_RBR;
+
+		break;
+		case 'Y':
+			RecibeFechaHora();
+		break;
+		case 'S':
+			LPC_UART1->IER = IER_THRE | IER_RLS;
+			Medicion();
+			UART1Count = 0;
+			LPC_UART1->IER = IER_THRE | IER_RLS | IER_RBR;
+	//	    LPC_GPIO0->FIOSET = (1 << 22); // Turn LED2 on
+			MandarVector();
+//		EnviaInfo();
+			break;
+		case 'X':
+			LPC_UART1->IER = IER_THRE | IER_RLS;
+			strcpy(estafeta,"");
+			UART1Count = 0;
+			LPC_UART1->IER = IER_THRE | IER_RLS | IER_RBR;
+			break;
+		default:
+			{
+			TBS++;
+			TBH++;
+			TG++;
+			HR++;
+			TGBHIn++;
+			TGBHOut++;
+
+			for(c=0; c<4*LARGO; c++) stringMemory[c]=32;
+			current_time = RTCGetTime();
+			DI=current_time.RTC_Yday;
+			ME=current_time.RTC_Mon;
+			AN=current_time.RTC_Year;
+			HO=current_time.RTC_Hour;
+			MI=current_time.RTC_Min;
+			SE=current_time.RTC_Sec;
+
+			strcpy(FechaHora, "");
+
+			if(DI<10) DI +=90;
+			itoa(DI, aux);
+			strcat(FechaHora, aux);
+
+			if(ME<10) ME +=90;
+			itoa(ME, aux);
+			strcat(FechaHora, aux);
+
+			AN-=2000;
+			itoa(AN, aux);
+			strcat(FechaHora, aux);
+
+			if(HO<10) HO+=90;
+			itoa(HO, aux);
+			strcat(FechaHora, aux);
+
+			if(MI<10) MI+=90;
+			itoa(MI, aux);
+			strcat(FechaHora, aux);
+
+			if(SE<10) SE+=90;
+			itoa(SE, aux);
+			strcat(FechaHora, aux);
+	//                strcat(cadena, FechaHora);
+			LPC_UART1->IER = IER_THRE | IER_RLS;
+			UARTSend(1, (uint8_t *)UART1Buffer, UART1Count );
+			UARTSend(1, (uint8_t *)FechaHora, strlen(FechaHora));
+			UART1Count = 0;
+			LPC_UART1->IER = IER_THRE | IER_RLS | IER_RBR;
+		}
+		break;
+		}
+	}
+}
+
+/*****************************************************************************
+** Function name:   vTest_PerformFFT
+**
+** Descriptions:    Perform one of the FFT functions
+**
+** Parameters:	    None
+**
+** Returned value:  None
+**
+******************************************************************************/
+static void vTest_PerformFFT(void)
+{
+	#ifdef NPOINTS
+	{
+		#if (NPOINTS == NPOINTS_64)
+		{
+			vF_dspl_fftR4b16N64(psi_Output, psi_Input);
+		}
+		#elif (NPOINTS == NPOINTS_256)
+		{
+			vF_dspl_fftR4b16N256(psi_Output, psi_Input);
+		}
+		#elif (NPOINTS == NPOINTS_1024)
+		{
+			vF_dspl_fftR4b16N1024(psi_Output, psi_Input);
+		}
+		#elif (NPOINTS == NPOINTS_4096)
+		{
+			vF_dspl_fftR4b16N4096(psi_Output, psi_Input);
+		}
+		#else
+		{
+			#error "NPOINTS Not Valid!"
+		}
+		#endif
+	}
+	#else
+	{
+		#error "NPOINTS Not Defined!"
+	}
+	#endif
+}
+
+/*****************************************************************************
+ **                            End Of File
+ *****************************************************************************/
+

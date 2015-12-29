@@ -1,0 +1,35 @@
+Lib_FreeRTOS/portable/MemMang/heap_2.d: \
+ ../Lib_FreeRTOS/portable/MemMang/heap_2.c \
+ E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/FreeRTOS.h \
+ E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/projdefs.h \
+ E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/portable.h \
+ E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\portable\GCC\ARM_CM3/portmacro.h \
+ E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/mpu_wrappers.h \
+ E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/FreeRTOSConfig.h \
+ E:\Baldor\NBrazo_Memoria_4\Lib_CMSISv1p30_LPC17xx\inc/LPC17xx.h \
+ E:\Baldor\NBrazo_Memoria_4\Lib_CMSISv1p30_LPC17xx\inc/core_cm3.h \
+ E:\Baldor\NBrazo_Memoria_4\Lib_CMSISv1p30_LPC17xx\inc/system_LPC17xx.h \
+ E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/task.h \
+ E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/list.h
+
+E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/FreeRTOS.h:
+
+E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/projdefs.h:
+
+E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/portable.h:
+
+E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\portable\GCC\ARM_CM3/portmacro.h:
+
+E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/mpu_wrappers.h:
+
+E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/FreeRTOSConfig.h:
+
+E:\Baldor\NBrazo_Memoria_4\Lib_CMSISv1p30_LPC17xx\inc/LPC17xx.h:
+
+E:\Baldor\NBrazo_Memoria_4\Lib_CMSISv1p30_LPC17xx\inc/core_cm3.h:
+
+E:\Baldor\NBrazo_Memoria_4\Lib_CMSISv1p30_LPC17xx\inc/system_LPC17xx.h:
+
+E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/task.h:
+
+E:\Baldor\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include/list.h:

@@ -1,0 +1,448 @@
+/*
+   ********************* Authors *********************
+   ***** Laboratorio de Sistemas Embebidos (LSE) *****
+   *****    http://laboratorios.fi.uba.ar/lse    *****
+   ******************* 20/12/2011 ********************
+     Ezequiel Espósito <ezequiel.esposito@gmail.com>
+         Alan Kharsansky <akharsa@gmail.com>
+       Federico Roasio <federoasio@gmail.com>
+     Daniel Schermuk <daniel.schermuk@gmail.com>
+   ***************************************************
+*/
+
+
+#ifdef __USE_CMSIS
+#include "LPC17xx.h"
+#endif
+
+
+#include "freq.h"
+#include "adc.h"
+#include "debug.h"
+#include "small_systick.h"
+#include <stdint.h>
+#include "uart.h"
+
+#include <string.h>
+
+#include "definitions.h"
+volatile uint32_t SysTickCount;		/* counts 10ms timeTicks */
+uint32_t DelayStart_SysTickCount;
+
+extern volatile uint32_t UART3Count;
+extern volatile uint8_t UART3Buffer[BUFSIZE];
+
+//volatile uint16_t vector[4096],promedio;
+volatile uint16_t vector[4096],promedio;
+volatile uint32_t inicio,final;
+volatile int16_t vecenviado[1096];
+//volatile int16_t vecenviado[40];
+const char* welcomeMsg = "SQue programon2:W";
+const char* saltolinea = "\n";
+const char* carreturn = "\r";
+//const char* saltolinea = 10;
+//const char* carreturn = 13;
+const char* coma = ",";
+char mens3[20];
+uint16_t m;
+uint32_t diferencia;
+
+
+
+char* itoa(int i, char b[]){
+    char const digit[] = "0123456789";
+    char* p = b;
+    if(i<0){
+        *p++ = '-';
+        i *= -1;
+    }
+    int shifter = i;
+    do{ //Move to where representation ends
+        ++p;
+        shifter = shifter/10;
+    }while(shifter);
+    *p = '\0';
+    do{ //Move back, inserting digits as u go
+        *--p = digit[i%10];
+        i = i/10;
+    }while(i);
+    return b;
+}
+/*----------------------------------------------------------------------------
+  SysTick_Handler
+ *----------------------------------------------------------------------------*/
+void SysTick_Handler(void)
+{
+    SysTickCount++; 				/* increment counter necessary in Delay() */
+}
+
+void IniciarVariables(void){
+	uint32_t j;
+    for(j=0;j<4096;j++){
+    	vector[j]=0;
+    	vecenviado[j]=0;
+    }
+}
+
+void MandarVector(void)
+{
+	UARTSend(3, (uint8_t *)"S" ,1 );
+
+//	for(m=0;m<10;m++){
+	for(m=0;m<4096;m++){
+//	    itoa(vector[m],mens3);
+	    itoa(vecenviado[m],mens3);
+		UARTSend(3, (uint8_t *)mens3 , strlen(mens3) );
+//		UARTSend(3, (uint8_t *)coma , strlen(coma) );
+		UARTSend(3, (uint8_t *)saltolinea , strlen(saltolinea) );
+		UARTSend(3, (uint8_t *)carreturn , strlen(carreturn) );
+	}
+
+    itoa(diferencia,mens3);
+	UARTSend(3, (uint8_t *)mens3 , strlen(mens3) );
+	UARTSend(3, (uint8_t *)saltolinea , strlen(saltolinea) );
+	UARTSend(3, (uint8_t *)carreturn , strlen(carreturn) );
+    itoa(promedio,mens3);
+	UARTSend(3, (uint8_t *)mens3 , strlen(mens3) );
+
+	UARTSend(3, (uint8_t *)"W" ,1 );
+}
+
+void Medicion(void){
+	uint32_t i,k,j,auxiliar1,auxiliar2;
+    inicio=SysTickCount;
+
+    for(i=0;i<4096;i++)
+    {
+        auxiliar1=0;
+    	for(j=0;j<25;j++){
+    		auxiliar1 += ADC0Read(0);	//Convert AD to Frequency
+    		for(k=0;k<3;k++);
+    	};
+		vector[i]=(int)(auxiliar1/25);
+    }
+    final=SysTickCount;
+    diferencia=final-inicio;
+    auxiliar2=0;
+    for(i=0;i<4096;i++){
+    	auxiliar2+=vector[i];
+    }
+	promedio=(int)(auxiliar2/4096);
+
+    for(i=0;i<4096;i++){
+    	vecenviado[i]= vector[i]-promedio;
+    }
+
+}
+
+int main(void)
+{
+	SystemInit();	//Called by startup code
+    LPC_PINCON->PINSEL1 &= (~(3 << 12));
+    LPC_GPIO0->FIODIR |= (1 << 22);
+/*
+	ADCInit(8000000);	// inicializa el ADC con velocidad de muestreo rápida
+    InitSysTick(1);
+	UARTInit(3, 115200);
+	UART3Count = 0;
+    LPC_GPIO0->FIOCLR = (1 << 22); // Turn LED2 off
+
+	while (1)
+	{
+		if ( UART3Count != 0 )
+		{
+			if ( UART3Buffer[0] == 'R' )
+			{
+				LPC_UART3->IER = IER_THRE | IER_RLS;
+				UARTSend(3, (uint8_t *)"SEL mas grande sigue siendo River PlateW", 40 );
+				UART3Count = 0;
+				LPC_UART3->IER = IER_THRE | IER_RLS | IER_RBR;
+			    LPC_GPIO0->FIOCLR = (1 << 22); // Turn LED2 off
+			}
+			else if ( UART3Buffer[0] == 'S' )
+			{
+				IniciarVariables();
+				LPC_UART3->IER = IER_THRE | IER_RLS;
+				Medicion();
+				UART3Count = 0;
+				LPC_UART3->IER = IER_THRE | IER_RLS | IER_RBR;
+			    LPC_GPIO0->FIOSET = (1 << 22); // Turn LED2 on
+				MandarVector();
+			}
+			else{
+				LPC_UART3->IER = IER_THRE | IER_RLS;
+				UARTSend(3, (uint8_t *)UART3Buffer, UART3Count );
+				UART3Count = 0;
+				LPC_UART3->IER = IER_THRE | IER_RLS | IER_RBR;
+			}
+		}
+	}
+*/
+	StartGUI ();
+	// Build the graphic interface and start the GLCD
+	CreateGUI ();
+
+	// Create FreeRTOS Semaphores
+	vSemaphoreCreateBinary (semaphore_TouchInterrupt);
+
+	// Start the Touch Panel Library
+	StartTouchPanel ();
+
+	// Configuration of the external interrupt
+	ConfigExternalInterrupt ();
+
+	// Start the ADC
+	ADC_Init (LPC_ADC, 200000);
+
+	// Create the task
+	xTaskCreate (Task_TouchPanel, "Task_GLCD", 300, NULL, 1, NULL);
+
+   	// Start the scheduler of FreeRTOS
+	vTaskStartScheduler();
+
+	for( ;; );
+
+	return 0;
+}
+
+void StartGUI ()
+{
+	GUI_DefineHeapMalloc ( pvPortMalloc );
+	GUI_DefineHeapFree ( vPortFree );
+	GUI_StartLibrary ();
+}
+
+void CreateGUI ()
+{
+	// Window "Home"
+	GUI_Window_Create ( "Home", "None", WHITE, "BOREAS", NULL, NULL, NULL );
+	GUI_Text_Create ( "Home", "txtAp1", 70, 12, WHITE, "", BLACK, "Racing" );
+	GUI_Text_Create ( "Home", "txtAp2", 70, 23, WHITE, "", BLACK, "CAMPEON " );
+	GUI_Text_Create ( "Home", "txtAp3", 48, 34, WHITE, "", BLACK, "GLCD Library" );
+	GUI_Button_Create ( "Home", "btnHome1", 12, 52, 60, 47, BLACK, "", WHITE, "Settings",
+						wndHome_btnSettings_OnClik, NULL, NULL, NULL );
+	GUI_Picture_Create ( "Home", "picFiuba1", 5, 16, 35, 40, fiuba, BLACK,
+						 wndHome_picFiuba_OnClik );
+
+	// Window "Credits"
+	GUI_Window_Create ( "Credits", "Home", WHITE, "Credits", NULL, NULL, NULL );
+	GUI_Text_Create ( "Credits", "txtInfo1", 5, 12, WHITE, "", BLACK, " Ezequiel Esposito " );
+	GUI_Text_Create ( "Credits", "txtInfo2", 5, 21, WHITE, "", BLACK, "  Alan Kharsansky  " );
+	GUI_Text_Create ( "Credits", "txtInfo3", 5, 30, WHITE, "", BLACK, "  Daniel Schermuk  " );
+	GUI_Text_Create ( "Credits", "txtInfo4", 5, 39, WHITE, "", BLACK, "  Federico Roasio  " );
+	GUI_Button_Create ( "Credits", "btnBack1", 12, 54, 37, 48, BLACK, "", WHITE, "Back",
+						wndCredits_btnBack_OnClik, NULL, NULL, NULL );
+
+	// Window "Menu"
+	GUI_Window_Create ( "Menu", "Home", WHITE, "Menu", NULL, NULL, NULL );
+	GUI_Button_Create ( "Menu", "btnExample", 12, 64, 32, 15, BLACK, "", WHITE, "Example",
+						wndMenu_btnExample_OnClik, NULL, NULL, NULL );
+	GUI_Button_Create ( "Menu", "btnDimmer", 12, 64, 32, 30, BLACK, "", WHITE, "Dimmer",
+						wndMenu_btnDimmer_OnClik, NULL, NULL, NULL );
+	GUI_Button_Create ( "Menu", "btnBack2", 12, 64, 32, 45, BLACK, "", WHITE, "Back",
+						wndMenu_btnBack_OnClik, NULL, NULL, NULL );
+
+	// Window "Example"
+	GUI_Window_Create ( "Example", "Menu", WHITE, "Example", NULL, NULL, NULL );
+	GUI_Button_Create ( "Example", "btnLed", 12, 64, 32, 16, BLACK, "", WHITE, "ON/OFF",
+						wndExample_btnChange_OnClik, NULL, NULL, NULL );
+	GUI_Text_Create ( "Example", "txtLed", 35, 33, WHITE, "", BLACK, " LED OFF " );
+	GUI_Button_Create ( "Example", "btnBack5", 12, 64, 32, 45, BLACK, "", WHITE, "Back",
+						wndExample_btnBack_OnClik , NULL, NULL, NULL );
+
+	// Window "Dimmer"
+	GUI_Window_Create ( "Dimmer", "Menu", WHITE, "Light Dimmer" ,NULL, NULL, NULL );
+	GUI_Text_Create ( "Dimmer", "txtLuz3", 10,	 18, WHITE, "", BLACK, "Dev 1:" );
+	GUI_Text_Create ( "Dimmer", "txtLuz4", 10, 33, WHITE, "", BLACK, "Dev 2:" );
+	GUI_TextSlider_Create ( "Dimmer", "tsLivinL1", BLACK, BLACK, BLACK, WHITE, 50, 52, 15,
+							"Up1", "Down1", wndDimmer_tsLivinL1_OnChange );
+	GUI_TextSlider_Create ( "Dimmer", "tsBedroomL1", BLACK, BLACK, BLACK, WHITE, 50, 52, 30,
+							"Up2", "Down2", wndDimmer_tsBedroomL1_OnChange );
+	GUI_Button_Create ( "Dimmer", "btnBack4", 12, 64, 32, 45, BLACK, "", WHITE, "Back",
+						wndDimmer_btnBack_OnClik, NULL, NULL, NULL );
+
+	GUI_Window_Draw ( "Home" );
+}
+
+void wndHome_btnSettings_OnClik ( void* parameter )
+{
+	GUI_Window_Draw ( "Menu" );
+}
+
+void wndHome_picFiuba_OnClik ( void* parameter )
+{
+	GUI_Window_Draw ( "Credits" );
+}
+
+void wndCredits_btnBack_OnClik ( void* parameter )
+{
+	GUI_Window_Draw ( "Home" );
+}
+
+void wndMenu_btnExample_OnClik ( void* parameter )
+{
+	GUI_Window_Draw ( "Example" );
+}
+
+void wndMenu_btnDimmer_OnClik ( void* parameter )
+{
+	GUI_Window_Draw ( "Dimmer" );
+}
+
+void wndMenu_btnBack_OnClik ( void* parameter )
+{
+	GUI_Window_Draw ( "Home" );
+}
+
+void wndExample_btnBack_OnClik ( void* parameter )
+{
+	GUI_Window_Draw ( "Menu" );
+}
+
+void wndExample_btnChange_OnClik (void* paramater)
+{
+	TText* pText;
+
+	// Get the GUI's object
+	pText = (TText*) GUI_Window_SearchObject ("txtLed");
+	if ( strcmp (pText->text, " LED OFF ") == 0 )
+	{
+		pText->text = " LED ON ";
+		LPC_GPIO0->FIODIR |= (1<<18);
+		LPC_GPIO0->FIOSET = (1<<18);
+	}
+	else
+	{
+		pText->text = " LED OFF ";
+		LPC_GPIO0->FIODIR |= (1<<18);
+		LPC_GPIO0->FIOCLR = (1<<18);
+	}
+}
+
+void wndDimmer_tsLivinL1_OnChange ( void* parameter )
+{
+
+}
+
+void wndDimmer_tsBedroomL1_OnChange ( void* parameter )
+{
+
+}
+
+void wndDimmer_btnBack_OnClik ( void* parameter )
+{
+	GUI_Window_Draw ( "Menu" );
+}
+
+void EINT3_IRQHandler (void)
+{
+	portBASE_TYPE xHigherPriorityTaskWoken;
+
+	NVIC_DisableIRQ(EINT3_IRQn); 			// Disable the interrupt
+
+	LPC_SC->EXTINT = EINT3; 				// Clear the external interrupt flag
+	LPC_GPIOINT->IO0IntClr = 0x01000000; 	// Clear the specific pin interrupt flag
+
+	// Give semaphore
+	xSemaphoreGiveFromISR (semaphore_TouchInterrupt, &xHigherPriorityTaskWoken);
+}
+
+void ConfigExternalInterrupt ( )
+{
+	// Configuration of the external interrupt
+	LPC_GPIOINT->IO0IntEnF = 0x01000000; 	// Port0.24 (falling edge)
+	LPC_SC->EXTMODE = EINT3_EDGE; 			// INT3 edge trigger
+	LPC_SC->EXTPOLAR = 0;					// INT3 is falling edge
+
+	// Enable the external interrupt
+	NVIC_EnableIRQ(EINT3_IRQn);				// Enable the interrupt
+	LPC_SC->EXTINT = EINT3; 				// Clear the external interrupt flag
+	LPC_GPIOINT->IO0IntClr = 0x01000000; 	// Clear the specific pin interrupt flag
+}
+
+void Task_TouchPanel( void *pvParameters )
+{
+	portTickType xLastWakeTime;
+	uint8_t isEventDetected = 0;
+	TouchPanel_TEvent event;
+	GLCDgui_TEvent GUIEvent;
+	int a;
+
+	for( ;; )
+	{
+		// Take semaphore
+		xSemaphoreTake (semaphore_TouchInterrupt, portMAX_DELAY);
+
+		// Execute until an event is detected
+		do
+		{
+			// TouchPanel_Read must be invoked some times to determine if an event exist
+			isEventDetected = TouchPanel_Read ( &(event) );
+
+			// Delay until execute TouchPanel_Read again
+			vTaskDelay (50/portTICK_RATE_MS);
+
+		} while ( isEventDetected == 0 );
+
+		// When the do-while stop the event must be raised using the GUI library
+		switch (event.eventType)
+		{
+			case CLICK:
+				GUIEvent.xCoordinate = event.xCoordinate;
+				GUIEvent.yCoordinate = event.yCoordinate;
+				GUIEvent.eventType = GLCD_CLICK;
+				GUI_Window_RaiseEvent (&GUIEvent);
+				GUI_Window_RedrowActiveWindow ();
+			break;
+
+			case DOUBLECLICK:
+
+			break;
+
+			case SCROLL_LEFTTORIGHT:
+				GUIEvent.xCoordinate = event.xCoordinate;
+				GUIEvent.yCoordinate = event.yCoordinate;
+				GUIEvent.eventType = GLCD_SCROLL_LEFTTORIGHT;
+				GUI_Window_RaiseEvent (&GUIEvent);
+			break;
+
+			case SCROLL_RIGHTTOLEFT:
+			break;
+
+			case DRAG:
+			break;
+
+			case DROP:
+			break;
+
+			case NOEVENT:
+				a = 2;
+			break;
+		}
+
+		isEventDetected = 0;
+
+		// Start and configure the external interrupt
+		ConfigExternalInterrupt ( );
+	}
+}
+
+void vApplicationMallocFailedHook ( void )
+{
+	for( ;; );
+}
+
+void vApplicationStackOverflowHook ( xTaskHandle *pxTask, signed char *pcTaskName )
+{
+	for( ;; );
+}
+
+void vApplicationIdleHook ( void )
+{
+
+}
+
+void vApplicationTickHook ( void )
+{
+
+}

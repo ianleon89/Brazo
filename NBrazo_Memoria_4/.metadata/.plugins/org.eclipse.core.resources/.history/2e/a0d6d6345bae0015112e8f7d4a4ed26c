@@ -1,0 +1,30 @@
+################################################################################
+# Automatically-generated file. Do not edit!
+################################################################################
+
+# Add inputs and outputs from these tool invocations to the build variables 
+C_SRCS += \
+../Lib_FreeRTOS/list.c \
+../Lib_FreeRTOS/queue.c \
+../Lib_FreeRTOS/tasks.c 
+
+OBJS += \
+./Lib_FreeRTOS/list.o \
+./Lib_FreeRTOS/queue.o \
+./Lib_FreeRTOS/tasks.o 
+
+C_DEPS += \
+./Lib_FreeRTOS/list.d \
+./Lib_FreeRTOS/queue.d \
+./Lib_FreeRTOS/tasks.d 
+
+
+# Each subdirectory must supply rules for building sources it contributes
+Lib_FreeRTOS/%.o: ../Lib_FreeRTOS/%.c
+	@echo 'Building file: $<'
+	@echo 'Invoking: MCU C Compiler'
+	arm-none-eabi-gcc -DALIGN_STRUCT_END=__attribute\(\(aligned\(4\)\)\) -DPACK_STRUCT_END=__attribute\(\(packed\)\) -DPACK_STRUCT_END=__attribute\(\(packed\)\) -DDEBUG -D__USE_CMSIS=CMSISv1p30_LPC17xx -D__CODE_RED -D__REDLIB__ -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\cr_dsplibFFTbin_cm3" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\cr_dsplib_cm3" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\cr_dsplib_testbench_fft" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\uart\inc" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\CMSISv1p30_LPC17xx" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\lib_small_printf_m3\inc" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\adc_buzzer\inc" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\Application" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\Application\Lib_FreeRTOS\include" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\Application\Lib_FreeRTOS\portable\GCC\ARM_CM3" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\Application\Bitmaps" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\LIB_GLCDgui\inc" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\LIB_GLCDPrimitives\inc" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\LIB_GLCDPrimitives\fonts" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\Lib_GLCDLowLevel\inc" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\Lib_TouchPanel\inc" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\Lib_MCU\inc" -I"E:\Boreas\TDA\Vibrometro\Unificado\NBrazo_Memoria_4\Lib_CMSISv1p30_LPC17xx\inc" -O0 -g3 -fsigned-char -c -fmessage-length=0 -fno-builtin -ffunction-sections -mcpu=cortex-m3 -mthumb -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	@echo 'Finished building: $<'
+	@echo ' '
+
+
